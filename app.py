@@ -18,7 +18,7 @@ options.add_argument("--disable-dev-shm-usage")
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
 try:
-    driver.get("https://www.in.gov.br/leiturajornal")
+    driver.get("https://www.in.gov.br/materia")
 
     wait = WebDriverWait(driver, 30)
 
@@ -30,6 +30,29 @@ try:
     # Limpa o campo e digita "Defesa"
     search_input.clear()
     search_input.send_keys("Ministério da Defesa")
+
+    # clica em pesquisa avancada
+    wait = WebDriverWait(driver, 20)
+    botao_pesquisa_avancada = wait.until(
+        EC.element_to_be_clickable((By.ID, "toggle-search-advanced"))
+    )
+    botao_pesquisa_avancada.click()
+
+
+    # clica em resultado exato
+    wait = WebDriverWait(driver, 20)
+    label_resultado_exato = wait.until(
+    EC.element_to_be_clickable((By.XPATH, "//label[@for='tipo-pesquisa-1']"))
+    )
+    label_resultado_exato.click()
+
+    # clica em personalizado
+    label_personalizado = wait.until(
+    EC.element_to_be_clickable((By.XPATH, "//label[@for='personalizado']"))
+    )
+    label_personalizado.click()
+
+    # enter
     search_input.send_keys(Keys.ENTER)
 
     # Espera até que os resultados apareçam
