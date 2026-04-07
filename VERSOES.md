@@ -1,10 +1,25 @@
-
 ## V1
-    ### Funções
-    faz a busca avancada para os dados de hoje e pesquisa exata
-    **pega apenas o primeiro resultado**
-    abre o primeiro reusltado e pesquisa a palavra chave **escolhida na interface do streamlit**
+**pesquisa.py**
 
-    ### Melhorias:
-    - pesquisar em todos os resultados
-    - pesquisar mais de uma palavra chave
+### Funções
+- entra na busca ja feita
+- **pega apenas o primeiro resultado**  
+- abre o primeiro resultado e pesquisa a palavra chave **escolhida na interface do streamlit**
+
+### Melhorias
+- pesquisar em todos os resultados  
+- pesquisar mais de uma palavra chave
+
+## V2
+*pesquisav2.py*
+
+### Funções
+- entra na busca ja feita
+- conta quantos resultados
+- pesquis a apalavra chave definida na interface do streamlit em todos os resultados
+- retorna quais possuem as palavras chaves
+- retorna link do pdf visualizador dos q possuem as palaavras chaves
+
+### Melhorias
+- retornar o pdf de documento .pdf
+- buscar mais de uma apalvra chave
