@@ -23,3 +23,21 @@
 ### Melhorias
 - retornar o pdf de documento .pdf
 - buscar mais de uma apalvra chave
+
+## V3
+*pesquisav3.py*
+
+### Funções
+- pesquisa multiplas palavras
+
+### Melhorias
+- interface
+
+## V4
+*pesquisav3.py*
+
+### Funções
+- contador e melhor interface
+
+### Melhorias
+- palavras ja subescolhidas
