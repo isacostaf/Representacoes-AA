@@ -49,16 +49,30 @@ if st.button("Buscar"):
 
         time.sleep(2)
 
+        # -----------------------------
+        # 1. PEGAR DADOS (sem navegar ainda)
+        # -----------------------------
         elementos = driver.find_elements(By.CSS_SELECTOR, "a[href*='/web/dou/']")
 
-        st.write(f"🔎 {len(elementos)} resultados encontrados")
-
-        # -----------------------------
-        # Loop nos resultados
-        # -----------------------------
+        links = []
         for el in elementos:
             titulo = el.text
             link = el.get_attribute("href")
+
+            if titulo.strip():  # evita vazios
+                links.append({
+                    "titulo": titulo,
+                    "link": link
+                })
+
+        st.write(f"🔎 {len(links)} resultados encontrados")
+
+        # -----------------------------
+        # 2. PROCESSAR CADA LINK
+        # -----------------------------
+        for item in links:
+            titulo = item["titulo"]
+            link = item["link"]
 
             driver.get(link)
             time.sleep(1)
@@ -74,11 +88,8 @@ if st.button("Buscar"):
                 "verificacao": verificacao
             })
 
-            driver.back()
-            time.sleep(1)
-
         # -----------------------------
-        # 📊 RESUMO (PARTE IMPORTANTE)
+        # 📊 RESUMO
         # -----------------------------
         st.markdown("## 📊 Resumo")
 
