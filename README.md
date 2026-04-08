@@ -19,7 +19,6 @@ Manual de arquivos
 **Pastas:** 
 *V-arquivo: versões do arquivo arquivo.py e evolução*
 
-
 ### App Princial:
 🔗 app.py
 *Esse é o app principal e único do projeto*

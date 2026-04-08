@@ -1,4 +1,6 @@
-# app.py
+## atualmente utiliza:
+## mesclav3.py
+
 import streamlit as st
 from linkbusca import obter_link_busca
 from analise import analisar_links, gerar_tabela
