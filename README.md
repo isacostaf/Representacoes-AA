@@ -62,11 +62,10 @@ Manual de arquivos
 *Para testar necessita estar na mesma pasta que o analise e o link busca usados*
 
 ### Versões:
-🔗 VESOES.md
+🔗 versoes.md
 
 *documento de rastreamento de versões e evoluções de arquivos*
 
 # To-do
 - [ ] concertar link correto
 - [ ] deixar mais rápido
-- [ ] apenas chamar a função pesquisa em app.py
