@@ -1,6 +1,8 @@
 # Como rodar:
 ``pip install streamlit pandas requests``
+
 ``pip install streamlit selenium webdriver-manager``
+
 ``pip install pdfplumber``
 
 ### Rodar app:
