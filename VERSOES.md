@@ -73,3 +73,15 @@
 
 ### Funções
 - contador carregamento
+
+## V7
+*analise7.py*
+
+### Funções
+- transofrma apenas para funcoes para ser chamado por app.py ou mescla
+
+## MESCLA V3
+*mesclav3.py*
+
+### Funções
+- trasnofrma analise em apenas chamada de funcao
