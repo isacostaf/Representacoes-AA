@@ -1,37 +1,76 @@
 import streamlit as st
+
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
-import time
+
 
 # -----------------------------
-# Verifica várias palavras no texto
+# Função que pega texto da página
+# -----------------------------
+def pegar_texto(driver):
+    paragrafos = driver.find_elements(By.CLASS_NAME, "dou-paragraph")
+    return " ".join([p.text for p in paragrafos]).lower()
+
+
+# -----------------------------
+# Função que verifica múltiplas palavras
 # -----------------------------
 def verificar_palavras(texto, palavras):
-    texto = texto.lower()
     resultado = {}
-
-    for palavra in palavras:
-        resultado[palavra] = palavra.lower() in texto
-
+    for p in palavras:
+        resultado[p] = p.lower() in texto
     return resultado
 
 
 # -----------------------------
 # Streamlit UI
 # -----------------------------
-st.title("Busca no DOU por múltiplas palavras")
+st.title("Scanner DOU - Multi Palavras")
 
-palavras_input = st.text_input(
-    "Digite palavras-chave separadas por vírgula",
-    "defesa, acordo, município"
+# 🔒 palavras fixas (ocultas do usuário)
+palavras_fixas = [
+    # originais
+    "instituir", "institui", "representantes",
+
+    # indicação
+    "indicacao", "indicações", "indicacao", "indicacoes",
+
+    # designados
+    "ficam designados",
+    "fica designado",
+    "ficam designadas",
+    "fica designada",
+
+    # grupo de trabalho (com erros comuns)
+    "grupo de trabalho",
+    "grupo de trabalhos",
+    "grupo de trabalaho",   # erro comum
+    "grupo trabalho",
+
+    # comitê
+    "comite", "comitê", "comites", "comitês",
+
+    # comissão
+    "comissao", "comissão", "comissoes", "comissões"
+]
+
+entrada = st.text_input(
+    "Digite palavras-chave adicionais (opcional)",
+    ""
 )
 
-if st.button("Buscar"):
+# palavras do usuário
+palavras_usuario = [p.strip() for p in entrada.split(",") if p.strip()]
 
-    palavras = [p.strip() for p in palavras_input.split(",") if p.strip()]
+# 🔗 junta tudo (sem duplicar)
+palavras = list(set(palavras_fixas + palavras_usuario))
+
+# (opcional) mostrar de forma discreta
+st.caption("Inclui automaticamente: instituir, institui, representantes, indicação, ficam designados, grupo de trabalho, comitê, comissão (e todas suas variações)")
+if st.button("Verificar TODOS os resultados"):
 
     options = Options()
     options.add_argument("--headless")
@@ -41,87 +80,46 @@ if st.button("Buscar"):
         options=options
     )
 
-    resultados = []
-
     try:
-        url_busca = "https://www.in.gov.br/consulta/-/buscar/dou?q=%22Minist%C3%A9rio+da+Defesa%22&s=todos&exactDate=personalizado&sortType=0&publishFrom=07-04-2026&publishTo=07-04-2026"
+        url_busca = "https://www.in.gov.br/consulta/-/buscar/dou?q=%22+Minist%C3%A9rio+da+Defesa%22&s=todos&exactDate=personalizado&sortType=0&publishFrom=08-04-2026&publishTo=08-04-2026"
         driver.get(url_busca)
 
-        time.sleep(2)
+        driver.implicitly_wait(5)
 
         # -----------------------------
-        # 1. PEGAR DADOS (sem navegar ainda)
+        # pegar todos resultados
         # -----------------------------
-        elementos = driver.find_elements(By.CSS_SELECTOR, "a[href*='/web/dou/']")
+        resultados = driver.find_elements(By.CSS_SELECTOR, "a[href*='/web/dou/']")
 
-        links = []
-        for el in elementos:
-            titulo = el.text
-            link = el.get_attribute("href")
+        links = [(r.text, r.get_attribute("href")) for r in resultados]
 
-            if titulo.strip():  # evita vazios
-                links.append({
-                    "titulo": titulo,
-                    "link": link
-                })
-
-        st.write(f"🔎 {len(links)} resultados encontrados")
+        st.write(f"🔎 Total: {len(links)} resultados")
 
         # -----------------------------
-        # 2. PROCESSAR CADA LINK
+        # percorrer documentos
         # -----------------------------
-        for item in links:
-            titulo = item["titulo"]
-            link = item["link"]
+        for i, (titulo, link) in enumerate(links):
+
+            st.write(f"---")
+            st.write(f"📄 {i+1}. {titulo}")
 
             driver.get(link)
-            time.sleep(1)
+            driver.implicitly_wait(5)
 
-            paragrafos = driver.find_elements(By.CLASS_NAME, "dou-paragraph")
-            texto_total = " ".join([p.text for p in paragrafos])
+            texto = pegar_texto(driver)
+            resultado = verificar_palavras(texto, palavras)
 
-            verificacao = verificar_palavras(texto_total, palavras)
+            # -----------------------------
+            # mostrar resultado por palavra
+            # -----------------------------
+            for palavra, tem in resultado.items():
+                if tem:
+                    st.write(f"✅ {palavra}")
+                else:
+                    st.write(f"❌ {palavra}")
 
-            resultados.append({
-                "titulo": titulo,
-                "link": link,
-                "verificacao": verificacao
-            })
-
-        # -----------------------------
-        # 📊 RESUMO
-        # -----------------------------
-        st.markdown("## 📊 Resumo")
-
-        for r in resultados:
-            total = len(r["verificacao"])
-            encontradas = sum(r["verificacao"].values())
-
-            if encontradas > 0:
-                st.markdown(f"### ✅ {r['titulo']}")
-            else:
-                st.markdown(f"### ❌ {r['titulo']}")
-
-            st.markdown(f"**{encontradas}/{total} palavras encontradas**")
-
-        # -----------------------------
-        # 🔎 DETALHES
-        # -----------------------------
-        st.markdown("---")
-        st.markdown("## 🔎 Detalhes")
-
-        for r in resultados:
-            st.markdown(f"### 📄 {r['titulo']}")
-
-            encontradas = [p for p, v in r["verificacao"].items() if v]
-            nao_encontradas = [p for p, v in r["verificacao"].items() if not v]
-
-            st.write("✅ Encontradas:", encontradas if encontradas else "Nenhuma")
-            st.write("❌ Não encontradas:", nao_encontradas if nao_encontradas else "Nenhuma")
-
-            st.markdown(f"[🔗 Abrir documento]({r['link']})")
-
-            st.markdown("---")
+            # link do documento
+            st.markdown(f"[Abrir documento]({link})")
 
     except Exception as e:
         st.error(f"Erro: {e}")

@@ -1,3 +1,7 @@
+## To-do
+- [ ] concertar link correto
+- [ ] deixar mais rápido
+
 ## V1
 **pesquisa.py**
 
@@ -7,8 +11,8 @@
 - abre o primeiro resultado e pesquisa a palavra chave **escolhida na interface do streamlit**
 
 ### Melhorias
-- pesquisar em todos os resultados  
-- pesquisar mais de uma palavra chave
+- [x] pesquisar em todos os resultados - *v2*
+- [x] pesquisar mais de uma palavra chave - *v3*
 
 ## V2
 *pesquisav2.py*
@@ -21,8 +25,8 @@
 - retorna link do pdf visualizador dos q possuem as palaavras chaves
 
 ### Melhorias
-- retornar o pdf de documento .pdf
-- buscar mais de uma apalvra chave
+- [ ] retornar o pdf de documento .pdf
+- [x] buscar mais de uma apalvra chave - *v3*
 
 ## V3
 *pesquisav3.py*
@@ -31,13 +35,10 @@
 - pesquisa multiplas palavras
 
 ### Melhorias
-- interface
+- [ ] interface
 
 ## V4
-*pesquisav3.py*
+*pesquisav4.py*
 
 ### Funções
-- contador e melhor interface
-
-### Melhorias
-- palavras ja subescolhidas
+- palavras já selecionadas
