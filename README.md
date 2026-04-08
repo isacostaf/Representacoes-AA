@@ -11,6 +11,15 @@
 ### Como rodar qualquer streamlit:
 ``streamlit run arquivo.py``
 
+### Como criar executavel:
+
+instale a ferramente 
+
+``pip install pyinstaller``
+
+``pyinstaller --clean --noconfirm DOU.spec``
+
+
 # Arquivos:
 Manual de arquivos
 
