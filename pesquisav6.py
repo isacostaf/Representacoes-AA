@@ -1,7 +1,3 @@
-## Atualmente versão:
-## mesclav2
-
-from linkbusca import obter_link_busca
 import streamlit as st
 
 from selenium import webdriver
@@ -33,7 +29,7 @@ def verificar_palavras(texto, palavras):
 # -----------------------------
 # Streamlit UI
 # -----------------------------
-st.title("Scanner Representações - MD")
+st.title("Scanner DOU - Multi Palavras")
 
 # 🔒 palavras fixas
 palavras_fixas = [
@@ -62,10 +58,6 @@ st.caption("Inclui automaticamente: instituir, institui, representantes, indica�
 
 if st.button("Verificar TODOS os resultados"):
 
-    # UI de carregamento
-    status = st.empty()
-    progress = st.progress(0)
-
     options = Options()
     options.add_argument("--headless")
 
@@ -75,47 +67,23 @@ if st.button("Verificar TODOS os resultados"):
     )
 
     try:
-        # -----------------------------
-        # 🔍 ETAPA 1: BUSCA
-        # -----------------------------
-        status.markdown("🔎 **Filtrando buscas...**")
-        progress.progress(10)
-
-        url_busca = obter_link_busca()
-
-        status.markdown("🌐 **Abrindo resultados...**")
-        progress.progress(20)
-
+        url_busca = "https://www.in.gov.br/consulta/-/buscar/dou?q=%22Minist%C3%A9rio+da+Defesa%22&s=todos&exactDate=personalizado&sortType=0&publishFrom=07-04-2026&publishTo=07-04-2026"
         driver.get(url_busca)
+
         driver.implicitly_wait(5)
 
         resultados = driver.find_elements(By.CSS_SELECTOR, "a[href*='/web/dou/']")
         links = [(r.text, r.get_attribute("href")) for r in resultados]
 
-        total_links = len(links)
-
-        status.markdown(f"📄 **{total_links} documentos encontrados**")
-        progress.progress(30)
-
-        st.write(f"🔎 Total: {total_links} resultados")
+        st.write(f"🔎 Total: {len(links)} resultados")
 
         resumo = []
         detalhes = []
 
         # -----------------------------
-        # 🔁 ETAPA 2: ANÁLISE
+        # percorre documentos
         # -----------------------------
-        for i, (titulo, link) in enumerate(links):
-
-            # progresso dinâmico (30% → 90%)
-            progresso = 30 + int((i / total_links) * 60)
-            progress.progress(progresso)
-
-            status.markdown(
-                f"📊 **Analisando documentos {i+1}/{total_links}**<br>"
-                f"<small>{titulo}</small>",
-                unsafe_allow_html=True
-            )
+        for titulo, link in links:
 
             driver.get(link)
             driver.implicitly_wait(5)
@@ -137,13 +105,7 @@ if st.button("Verificar TODOS os resultados"):
             detalhes.append((titulo, link, resultado))
 
         # -----------------------------
-        # ✅ FINALIZAÇÃO
-        # -----------------------------
-        progress.progress(100)
-        status.markdown("✅ **Finalizado! Gerando tabela...**")
-
-        # -----------------------------
-        # 📊 TABELA
+        # 📊 TABELA RESUMO (CORRETA)
         # -----------------------------
         st.subheader("📊 Resumo")
 
@@ -155,13 +117,15 @@ if st.button("Verificar TODOS os resultados"):
             dados_tabela.append({
                 "Documento": r["Documento"],
                 "Match": r["Match"],
-                "PDF": f'<a href="{link_pdf}" target="_blank">pdf</a>',
+                "PDF": f'<a href="{link_pdf}" target="_blank">PDF</a>',
                 "Palavras encontradas": r["Encontradas"]
             })
 
         df = pd.DataFrame(dados_tabela)
 
-        # cor
+        # -----------------------------
+        # 🎨 coluna auxiliar p cor
+        # -----------------------------
         df["_qtd"] = df["Match"].apply(lambda x: int(x.split("/")[0]))
 
         def destacar_linha(row):
@@ -170,19 +134,19 @@ if st.button("Verificar TODOS os resultados"):
             return [""] * len(row)
 
         styled_df = df.style.apply(destacar_linha, axis=1)
+
+        # remove coluna auxiliar da visualização
         styled_df = styled_df.hide(axis="columns", subset=["_qtd"])
 
         st.markdown(styled_df.to_html(escape=False), unsafe_allow_html=True)
 
-        # rodapé
+        # -----------------------------
+        # 🧾 RODAPÉ
+        # -----------------------------
         st.markdown(
             f"<p style='color:gray; font-size:12px;'>Palavras pesquisadas: {', '.join(palavras)}</p>",
             unsafe_allow_html=True
-            
         )
-
-        # limpa loading no final (opcional)
-        status.markdown("🎉 **Concluído!**")
 
     except Exception as e:
         st.error(f"Erro: {e}")

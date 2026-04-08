@@ -1,6 +1,3 @@
-## Atualmente versão:
-## mesclav2
-
 from linkbusca import obter_link_busca
 import streamlit as st
 
@@ -33,7 +30,7 @@ def verificar_palavras(texto, palavras):
 # -----------------------------
 # Streamlit UI
 # -----------------------------
-st.title("Scanner Representações - MD")
+st.title("Scanner DOU - Multi Palavras")
 
 # 🔒 palavras fixas
 palavras_fixas = [
@@ -155,7 +152,7 @@ if st.button("Verificar TODOS os resultados"):
             dados_tabela.append({
                 "Documento": r["Documento"],
                 "Match": r["Match"],
-                "PDF": f'<a href="{link_pdf}" target="_blank">pdf</a>',
+                "PDF": f'<a href="{link_pdf}" target="_blank">ver pdf</a>',
                 "Palavras encontradas": r["Encontradas"]
             })
 
@@ -178,7 +175,6 @@ if st.button("Verificar TODOS os resultados"):
         st.markdown(
             f"<p style='color:gray; font-size:12px;'>Palavras pesquisadas: {', '.join(palavras)}</p>",
             unsafe_allow_html=True
-            
         )
 
         # limpa loading no final (opcional)
