@@ -10,14 +10,10 @@ from analise import analisar_links, gerar_tabela
 st.title("Scanner Representações - MD")
 
 palavras_fixas = [
-    "instituir", "institui", "representantes",
-    "indicacao", "indicações", "indicacoes",
-    "ficam designados", "fica designado",
-    "ficam designadas", "fica designada",
-    "grupo de trabalho", "grupo de trabalhos",
-    "grupo de trabalaho", "grupo trabalho",
-    "comite", "comitê", "comites", "comitês",
-    "comissao", "comissão", "comissoes", "comissões"
+    "grupo de trabalho","comitê","comissão","conselho",
+    "grupo de assesoria especial", "grupo conjunto",
+    "grupo especial","grupo técnico","grupo temporário",
+    "subcomissão","subcomitê","subgrupo"
 ]
 
 entrada = st.text_input(
