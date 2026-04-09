@@ -86,12 +86,18 @@ def gerar_tabela(resumo):
             "Palavras encontradas": r["Encontradas"]
         })
 
+    if not dados_tabela:
+        df = pd.DataFrame(columns=["Documento", "Match", "PDF", "Palavras encontradas"])
+        df["_qtd"] = pd.Series(dtype="int64")
+        styled_df = df.style.hide(axis="columns", subset=["_qtd"])
+        return styled_df
+
     df = pd.DataFrame(dados_tabela)
     df["_qtd"] = df["Match"].apply(lambda x: int(x.split("/")[0]))
 
     def destacar_linha(row):
         if row["_qtd"] > 0:
-            return ["background-color: #e6f4ea"] * len(row)
+            return ["background-color: rgba(255, 255, 255, 0.3)"] * len(row)
         return [""] * len(row)
 
     styled_df = df.style.apply(destacar_linha, axis=1)

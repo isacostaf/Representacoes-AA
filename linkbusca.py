@@ -7,7 +7,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 
 
-def obter_link_busca():
+def obter_link_busca(data_inicial_str, data_final_str):
     options = webdriver.ChromeOptions()
     options.add_argument("--headless")
     options.add_argument("--no-sandbox")
@@ -45,6 +45,33 @@ def obter_link_busca():
         wait.until(
             EC.element_to_be_clickable((By.XPATH, "//label[@for='personalizado']"))
         ).click()
+
+        # data inicial e final
+        driver.execute_script(
+                """
+                const dataInicial = arguments[0];
+                const dataFinal = arguments[1];
+
+                const inicio = document.querySelector('#data-inicio');
+                const fim = document.querySelector('#data-fim');
+
+                const preencher = (campo, valor) => {
+                    if (!campo) return false;
+                    campo.removeAttribute('readonly');
+                    campo.focus();
+                    campo.value = valor;
+                    campo.dispatchEvent(new Event('input', { bubbles: true }));
+                    campo.dispatchEvent(new Event('change', { bubbles: true }));
+                    return campo.value === valor;
+                };
+
+                if (!inicio || !fim) return false;
+
+                return preencher(inicio, dataInicial) && preencher(fim, dataFinal);
+                """,
+                data_inicial_str,
+                data_final_str,
+        )
 
         # enter
         search_input.send_keys(Keys.ENTER)

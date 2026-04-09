@@ -1,6 +1,8 @@
 ## atualmente utiliza:
 ## mesclav3.py
 
+from datetime import date
+
 import streamlit as st
 from linkbusca import obter_link_busca
 from analise import analisar_links, gerar_tabela
@@ -27,13 +29,26 @@ palavras = list(set(palavras_fixas + palavras_usuario))
 
 st.caption("Inclui automaticamente: instituir, institui, representantes, indicação, ficam designados, grupo de trabalho, comitê, comissão (e todas suas variações)")
 
+col_data_inicial, col_data_final = st.columns(2)
+with col_data_inicial:
+    data_inicial = st.date_input("Data inicial", value=date.today(), format="DD/MM/YYYY")
+with col_data_final:
+    data_final = st.date_input("Data final", value=date.today(), format="DD/MM/YYYY")
+
 if st.button("Verificar TODOS os resultados"):
+    if data_inicial > data_final:
+        st.error("A data inicial não pode ser maior que a data final.")
+        st.stop()
+
     status = st.empty()
     progress = st.progress(0)
 
+    data_inicial_str = data_inicial.strftime("%d/%m/%Y")
+    data_final_str = data_final.strftime("%d/%m/%Y")
+
     # Buscamos o link da pesquisa de hoje
     # Funcao do arquivo linkbusca.py
-    url_busca = obter_link_busca() 
+    url_busca = obter_link_busca(data_inicial_str, data_final_str)
 
     # Analisamos os arquivos
     # Funcao do arquivo analise.py
@@ -50,3 +65,4 @@ if st.button("Verificar TODOS os resultados"):
         f"<p style='color:gray; font-size:12px;'>Palavras pesquisadas: {', '.join(palavras)}</p>",
         unsafe_allow_html=True
     )
+    st.caption(f"Período consultado: {data_inicial_str} a {data_final_str}")   
