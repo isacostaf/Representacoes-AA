@@ -6,15 +6,23 @@ from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 import pandas as pd
 
+palavras_negativas = ["resolução"]
+
 def pegar_texto(driver):
     paragrafos = driver.find_elements(By.CLASS_NAME, "dou-paragraph")
     return " ".join([p.text for p in paragrafos]).lower()
 
-def verificar_palavras(texto, palavras):
-    resultado = {}
+def verificar_palavras(texto, palavras, palavras_negativas):
+    resultado_pos = {}
+    resultado_neg = {}
+
     for p in palavras:
-        resultado[p] = p.lower() in texto
-    return resultado
+        resultado_pos[p] = p.lower() in texto
+
+    for p in palavras_negativas:
+        resultado_neg[p] = p.lower() in texto
+
+    return resultado_pos, resultado_neg
 
 def analisar_links(url_busca, palavras, status=None, progress=None):
     options = Options()
@@ -52,9 +60,10 @@ def analisar_links(url_busca, palavras, status=None, progress=None):
             driver.implicitly_wait(5)
 
             texto = pegar_texto(driver)
-            resultado = verificar_palavras(texto, palavras)
+            resultado_pos, resultado_neg = verificar_palavras(texto, palavras, palavras_negativas)
+            negativas_encontradas = [p for p, v in resultado_neg.items() if v]
 
-            encontradas = [p for p, v in resultado.items() if v]
+            encontradas = [p for p, v in resultado_pos.items() if v]
             qtd = len(encontradas)
             total = len(palavras)
 
@@ -62,10 +71,11 @@ def analisar_links(url_busca, palavras, status=None, progress=None):
                 "Documento": titulo,
                 "Match": f"{qtd}/{total}",
                 "PDF": f"[PDF]({link})",
-                "Encontradas": ", ".join(encontradas)
+                "Encontradas": ", ".join(encontradas),
+                "Negativas encontradas": ", ".join(negativas_encontradas)
             })
 
-            detalhes.append((titulo, link, resultado))
+            detalhes.append((titulo, link, resultado_pos, resultado_neg))
 
         if progress: progress.progress(100)
         if status: status.markdown("✅ **Finalizado!**")
@@ -83,11 +93,12 @@ def gerar_tabela(resumo):
             "Documento": r["Documento"],
             "Match": r["Match"],
             "PDF": f'<a href="{link_pdf}" target="_blank">pdf</a>',
-            "Palavras encontradas": r["Encontradas"]
+            "Palavras encontradas": r["Encontradas"],
+            "Palavras negativas": r.get("Negativas encontradas", "")
         })
 
     if not dados_tabela:
-        df = pd.DataFrame(columns=["Documento", "Match", "PDF", "Palavras encontradas"])
+        df = pd.DataFrame(columns=["Documento", "Match", "PDF", "Palavras encontradas", "Palavras negativas"])
         df["_qtd"] = pd.Series(dtype="int64")
         styled_df = df.style.hide(axis="columns", subset=["_qtd"])
         return styled_df
