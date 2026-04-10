@@ -63,15 +63,22 @@ def analisar_links(url_busca, palavras, status=None, progress=None):
             resultado_pos, resultado_neg = verificar_palavras(texto, palavras, palavras_negativas)
             negativas_encontradas = [p for p, v in resultado_neg.items() if v]
 
+            # contador positivas
             encontradas = [p for p, v in resultado_pos.items() if v]
             qtd = len(encontradas)
             total = len(palavras)
 
+            # contador negativas
+            encontradas_neg = [p for p, v in resultado_neg.items() if v]
+            qtd_neg = len(encontradas_neg)
+            total_neg = len(palavras_negativas)
+
             resumo.append({
                 "Documento": titulo,
-                "Match": f"{qtd}/{total}",
                 "PDF": f"[PDF]({link})",
+                "Match": f"{qtd}/{total}",
                 "Encontradas": ", ".join(encontradas),
+                "Match Negativas": f"{qtd_neg}/{total_neg}",
                 "Negativas encontradas": ", ".join(negativas_encontradas)
             })
 
@@ -91,9 +98,10 @@ def gerar_tabela(resumo):
         link_pdf = r["PDF"].split("(")[1].replace(")", "")
         dados_tabela.append({
             "Documento": r["Documento"],
-            "Match": r["Match"],
             "PDF": f'<a href="{link_pdf}" target="_blank">pdf</a>',
+            "Match": r["Match"],
             "Palavras encontradas": r["Encontradas"],
+            "Match Negativas": r["Match Negativas"],
             "Palavras negativas": r.get("Negativas encontradas", "")
         })
 
@@ -103,12 +111,20 @@ def gerar_tabela(resumo):
         styled_df = df.style.hide(axis="columns", subset=["_qtd"])
         return styled_df
 
+    # verde
     df = pd.DataFrame(dados_tabela)
     df["_qtd"] = df["Match"].apply(lambda x: int(x.split("/")[0]))
 
+    # amarelo
+    df["_qtdn"] = df["Match Negativas"].apply(lambda x: int(x.split("/")[0]))
+
     def destacar_linha(row):
+        # amarelo
+        if row["_qtdn"] > 0 and row["_qtd"] > 0:
+            return ["background-color: #FFF9C4"] * len(row)
+        # verde
         if row["_qtd"] > 0:
-            return ["background-color: rgba(255, 255, 255, 0.3)"] * len(row)
+            return ["background-color: #e6f4ea"] * len(row)
         return [""] * len(row)
 
     styled_df = df.style.apply(destacar_linha, axis=1)
