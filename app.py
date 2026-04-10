@@ -7,6 +7,7 @@ import streamlit as st
 from linkbusca import obter_link_busca
 from analise import analisar_links, gerar_tabela
 from gerar_relatorio import gerar_csv_relatorio
+from baixar_pdf import baixar_pdf
 
 st.title("Scanner Representações - MD")
 
@@ -62,6 +63,10 @@ if st.button("Verificar TODOS os resultados"):
     # Funcao do arquivo gerar_relatorio.py
     gerar_csv_relatorio(resumo)
 
+    # baixamos os PDFs
+    # Funcao do arquivo baixar_pdf.py
+    baixar_pdf()
+    
     st.markdown(
         f"<p style='color:gray; font-size:12px;'>Palavras pesquisadas: {', '.join(palavras)}</p>",
         unsafe_allow_html=True
