@@ -6,7 +6,41 @@ from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 import pandas as pd
 
-palavras_negativas = ["resolução"]
+palavras_negativas = [
+    # verbos normativos (muito fortes)
+    "altera", "alterado", "alterada", "alteração",
+    "modifica", "modificado", "modificada",
+    "revoga", "revogado", "revogada",
+    "revogam-se", "fica revogada", "ficam revogadas",
+    "passa a vigorar", "vigorar",
+    "substitui", "substituído", "substituída",
+    "incluir", "incluído", "incluída",
+    "excluir", "excluído", "excluída",
+
+    # estrutura de norma jurídica
+    "resolve", "resolvem", "resolve-se",
+    "dispõe", "dispoe", "disposições",
+    "regulamenta", "regulamentado",
+    "estabelece", "estabelecido",
+    "institui", "instituído",
+    "define", "definido",
+
+    # estrutura de artigo (fortíssimo sinal negativo)
+    "art.", "artigo", "§", "parágrafo",
+    "inciso", "alínea", "caput",
+
+    # linguagem de alteração normativa
+    "dá nova redação", "da nova redacao",
+    "passa a ter a seguinte redação",
+    "fica alterado", "ficam alterados",
+    "fica incluído", "ficam incluídos",
+    "fica excluído", "ficam excluídos",
+
+    # referência a normas existentes
+    "nos termos da", "na forma da lei",
+    "decreto", "portaria", "resolução",
+    "lei nº", "lei no", "decreto nº", "portaria nº"
+]
 
 def pegar_texto(driver):
     paragrafos = driver.find_elements(By.CLASS_NAME, "dou-paragraph")
@@ -111,20 +145,35 @@ def gerar_tabela(resumo):
         styled_df = df.style.hide(axis="columns", subset=["_qtd"])
         return styled_df
 
-    # verde
     df = pd.DataFrame(dados_tabela)
-    df["_qtd"] = df["Match"].apply(lambda x: int(x.split("/")[0]))
 
-    # amarelo
+    # quantidade de matches
+    df["_qtd"] = df["Match"].apply(lambda x: int(x.split("/")[0]))
+    df["_qtd_total"] = df["Match"].apply(lambda x: int(x.split("/")[1]))
+
     df["_qtdn"] = df["Match Negativas"].apply(lambda x: int(x.split("/")[0]))
+    df["_qtdn_total"] = df["Match Negativas"].apply(lambda x: int(x.split("/")[1]))
+
+
+    # SCORE (pode ajustar pesos depois)
+    df["_score"] = (
+        df["_qtd"] * 2.0     # positivo pesa mais
+        - df["_qtdn"] * 2.5  # negativo pesa mais ainda
+    )
 
     def destacar_linha(row):
-        # amarelo
-        if row["_qtdn"] > 0 and row["_qtd"] > 0:
-            return ["background-color: #FFF9C4"] * len(row)
-        # verde
-        if row["_qtd"] > 0:
+
+        score = row["_score"]
+
+        # 🟢 alta chance de representação
+        if score >= 3:
             return ["background-color: #e6f4ea"] * len(row)
+
+        # 🟡 zona de incerteza (pode ser ou não)
+        if 0 < score < 3:
+            return ["background-color: #fff9c4"] * len(row)
+
+        # ⚪ neutro / não parece representação
         return [""] * len(row)
 
     styled_df = df.style.apply(destacar_linha, axis=1)
