@@ -10,14 +10,40 @@ from analise import analisar_links, gerar_tabela
 st.title("Scanner Representações - MD")
 
 palavras_fixas = [
-    "instituir", "institui", "representantes",
-    "indicacao", "indicações", "indicacoes",
-    "ficam designados", "fica designado",
-    "ficam designadas", "fica designada",
-    "grupo de trabalho", "grupo de trabalhos",
-    "grupo de trabalaho", "grupo trabalho",
-    "comite", "comitê", "comites", "comitês",
-    "comissao", "comissão", "comissoes", "comissões"
+    # estruturas colegiadas
+    "comitê", "comissao", "conselho", "grupo de trabalho",
+    "grupo de assessoramento", "grupo de assessoria",
+    "grupo de assessoria especial", "grupo conjunto",
+    "grupo especial", "grupo técnico", "grupo técnico de trabalho",
+    "grupo temporário", "subcomissao", "subcomite", "subgrupo",
+
+    # ação típica de representação
+    "designados", "designado", "designar",
+    "nomeados", "nomeado", "nomear",
+    "indicados", "indicado", "indicar",
+    "designa", "nomeia", "indica",
+
+    # composição de pessoas
+    "titular", "suplente", "membro", "membros",
+    "representante", "representantes",
+    "integrante", "integrantes",
+
+    # cargos dentro de comitês
+    "coordenador", "coordenadora",
+    "presidente", "vice-presidente",
+    "relator", "secretario", "secretária",
+
+    # padrões institucionais fortes
+    "ficam designados", "ficam nomeados", "ficam indicados",
+    "para compor", "compor o comite", "compor o conselho",
+    "no âmbito do", "no ambito do",
+
+    "ficam designados para compor",
+    "ficam designados os representantes",
+    "designados para compor",
+    "composição do comitê",
+    "titular e suplente",
+    "no âmbito do comitê"
 ]
 
 entrada = st.text_input(
