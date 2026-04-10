@@ -21,6 +21,7 @@ datas += [
     ('app.py', '.'),
     ('analise.py', '.'),
     ('linkbusca.py', '.'),
+    ('gerar_relatorio.py', '.'),
 ]
 
 a = Analysis(

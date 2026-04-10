@@ -6,18 +6,15 @@ from datetime import date
 import streamlit as st
 from linkbusca import obter_link_busca
 from analise import analisar_links, gerar_tabela
+from gerar_relatorio import gerar_csv_relatorio
 
 st.title("Scanner Representações - MD")
 
 palavras_fixas = [
-    "instituir", "institui", "representantes",
-    "indicacao", "indicações", "indicacoes",
-    "ficam designados", "fica designado",
-    "ficam designadas", "fica designada",
-    "grupo de trabalho", "grupo de trabalhos",
-    "grupo de trabalaho", "grupo trabalho",
-    "comite", "comitê", "comites", "comitês",
-    "comissao", "comissão", "comissoes", "comissões"
+    "grupo de trabalho","comitê","comissão","conselho",
+    "grupo de assesoria especial", "grupo conjunto",
+    "grupo especial","grupo técnico","grupo temporário",
+    "subcomissão","subcomitê","subgrupo"
 ]
 
 entrada = st.text_input(
@@ -60,6 +57,10 @@ if st.button("Verificar TODOS os resultados"):
 
     st.subheader("📊 Resultado")
     st.markdown(styled_df.to_html(escape=False), unsafe_allow_html=True)
+
+    # Geramos CSV
+    # Funcao do arquivo gerar_relatorio.py
+    gerar_csv_relatorio(resumo)
 
     st.markdown(
         f"<p style='color:gray; font-size:12px;'>Palavras pesquisadas: {', '.join(palavras)}</p>",
