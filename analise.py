@@ -97,7 +97,7 @@ def gerar_tabela(resumo):
 
     def destacar_linha(row):
         if row["_qtd"] > 0:
-            return ["background-color: rgba(255, 255, 255, 0.3)"] * len(row)
+            return ["background-color: #e6f4ea"] * len(row)
         return [""] * len(row)
 
     styled_df = df.style.apply(destacar_linha, axis=1)
