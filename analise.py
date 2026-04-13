@@ -26,7 +26,7 @@ palavras_negativas = [
     "define", "definido",
 
     # estrutura de artigo (fortíssimo sinal negativo)
-    "art.", "artigo", "§", "parágrafo",
+    "artigo", "parágrafo",
     "inciso", "alínea", "caput",
 
     # linguagem de alteração normativa
@@ -38,8 +38,8 @@ palavras_negativas = [
 
     # referência a normas existentes
     "nos termos da", "na forma da lei",
-    "decreto", "portaria", "resolução",
-    "lei nº", "lei no", "decreto nº", "portaria nº"
+    "portaria",
+    "lei nº", "lei no"
 ]
 
 def pegar_texto(driver):
