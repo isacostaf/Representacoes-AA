@@ -97,6 +97,10 @@ if st.button("Verificar TODOS os resultados"):
     # baixamos os PDFs
     # Funcao do arquivo baixar_pdf.py
     baixar_pdf()
+
+    # Enviamos email
+    # Funcao do arquivo enviar_email.py
+    enviar_email_representacoes()
     
     st.markdown(
         f"<p style='color:gray; font-size:12px;'>Palavras pesquisadas: {', '.join(palavras)}</p>",

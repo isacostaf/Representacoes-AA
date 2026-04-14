@@ -106,7 +106,3 @@ def enviar_email_representacoes(
 			servidor.ehlo()
 			servidor.login(smtp_usuario, smtp_senha)
 			servidor.send_message(msg)
-
-if __name__ == "__main__":
-	resultado = enviar_email_representacoes()
-	print(resultado)
