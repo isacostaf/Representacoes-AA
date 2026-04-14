@@ -10,10 +10,12 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 
+# renomeia o nome do arquivo para evitar caracteres invalidos no nome do arquivo
 def renomear(texto: str) -> str:
     REGEX_NOME = re.compile(r'[\\/:*?"<>|]+')
     return REGEX_NOME.sub(" ", str(texto or "documento")).strip().replace(" ", "_") or "documento"
 
+# cria o webdriver do Chrome para acessaro os links e baixar os arquivos em PDF
 def criar_driver():
     options = webdriver.ChromeOptions()
     options.add_argument("--headless")
@@ -24,6 +26,7 @@ def criar_driver():
         options=options
     )
 
+# imprime a pagina em PDF
 def imprimir_pagina_em_pdf(driver, url: str, caminho_saida: Path, timeout: int = 30) -> None:
     driver.get(url)
     WebDriverWait(driver, timeout).until(EC.presence_of_element_located((By.CSS_SELECTOR, "body")))
@@ -37,16 +40,17 @@ def imprimir_pagina_em_pdf(driver, url: str, caminho_saida: Path, timeout: int =
     )
     caminho_saida.write_bytes(base64.b64decode(pdf_data["data"]))
 
-
-
+# faz o downloud dos arquivos em pdf
 def baixar_pdf(caminho_csv: str = "relatorio.csv", pasta_saida: str = "downloads_pdfs") -> dict:
     df = pd.read_csv(caminho_csv)
     if "PDF" not in df.columns:
         raise ValueError("Coluna PDF nao encontrada")
 
+    # cria a pasta de destino se nao existir
     destino = Path(pasta_saida)
     destino.mkdir(parents=True, exist_ok=True)
 
+    # limpa a pasta dos pdf 
     for arquivo in destino.glob("*.pdf"):
         try:
             arquivo.unlink()
@@ -62,6 +66,7 @@ def baixar_pdf(caminho_csv: str = "relatorio.csv", pasta_saida: str = "downloads
     
     driver = criar_driver()
 
+    # percorre os links no arquivo csv e baixa os arquivos em pdf
     try:
         for linha in df[["Documento", "PDF"]].fillna("").to_dict("records"):
             nome = renomear(linha["Documento"])
