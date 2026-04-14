@@ -189,7 +189,17 @@ def analisar_links(url_busca, palavras, status=None, progress=None):
                 )
             )
 
-            
+            padrao_alteracao = (
+            ("alterar" in texto or "altera" in texto)
+            and (
+                "designa" in texto
+                or "designações" in texto
+                or "designacoes" in texto
+                or "representantes" in texto
+                or "comitê" in texto
+                or "conselho" in texto
+            )
+        )
 
             # ignora negativos estruturais se for representação
             if padrao_representacao:
@@ -208,6 +218,9 @@ def analisar_links(url_busca, palavras, status=None, progress=None):
 
             # boost forte
             if padrao_representacao:
+                score += 20
+
+            if padrao_alteracao:
                 score += 20
 
             # detecção de nomes
