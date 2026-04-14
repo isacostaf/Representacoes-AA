@@ -15,4 +15,4 @@ def gerar_csv_relatorio(resumo, caminho_saida="relatorio.csv"):
 	filtro = (df["Match_Encontradas"].fillna(0) > 0)
 
 	# gera o arquivo csv 
-	df[filtro].to_csv(caminho_saida, columns=["Documento", "Match", "PDF", "Encontradas"], index=False, encoding="utf-8")
+	df[filtro].to_csv(caminho_saida, columns=["Documento", "PDF"], index=False, encoding="utf-8")
