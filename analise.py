@@ -3,6 +3,9 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
 from webdriver_manager.chrome import ChromeDriverManager
 import pandas as pd
 
@@ -58,6 +61,71 @@ def verificar_palavras(texto, palavras, palavras_negativas):
 
     return resultado_pos, resultado_neg
 
+def _encontrar_botao_proxima(driver):
+    try:
+        botao = driver.find_element(By.ID, "rightArrow")
+    except Exception:
+        return None
+
+    if not botao.is_displayed():
+        return None
+
+    classes = (botao.get_attribute("class") or "").lower()
+    aria_disabled = (botao.get_attribute("aria-disabled") or "").lower()
+    disabled_attr = botao.get_attribute("disabled")
+
+    if "disabled" in classes or aria_disabled == "true" or disabled_attr is not None:
+        return None
+
+    return botao
+
+def _coletar_links_paginados(driver, status=None, max_paginas=200):
+    wait = WebDriverWait(driver, 12)
+    links_unicos = []
+    vistos = set()
+    pagina = 1
+
+    while pagina <= max_paginas:
+        resultados = driver.find_elements(By.CSS_SELECTOR, "a[href*='/web/dou/']")
+
+        for r in resultados:
+            href = r.get_attribute("href")
+            if not href or href in vistos:
+                continue
+
+            titulo = (r.text or "").strip()
+            vistos.add(href)
+            links_unicos.append((titulo if titulo else "Sem titulo", href))
+
+        if status:
+            status.markdown(f"🔎 **Coletando resultados... página {pagina} ({len(links_unicos)} links únicos)**")
+
+        botao_proxima = _encontrar_botao_proxima(driver)
+        if not botao_proxima:
+            break
+
+        url_antes = driver.current_url
+        marcador = resultados[0] if resultados else None
+
+        driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", botao_proxima)
+        try:
+            botao_proxima.click()
+        except Exception:
+            driver.execute_script("arguments[0].click();", botao_proxima)
+
+        try:
+            if marcador:
+                wait.until(EC.staleness_of(marcador))
+            else:
+                wait.until(lambda d: d.current_url != url_antes)
+        except TimeoutException:
+            if driver.current_url == url_antes:
+                break
+
+        pagina += 1
+
+    return links_unicos
+
 def analisar_links(url_busca, palavras, status=None, progress=None):
     options = Options()
     options.add_argument("--headless")
@@ -72,8 +140,7 @@ def analisar_links(url_busca, palavras, status=None, progress=None):
         driver.get(url_busca)
         driver.implicitly_wait(5)
 
-        resultados = driver.find_elements(By.CSS_SELECTOR, "a[href*='/web/dou/']")
-        links = [(r.text, r.get_attribute("href")) for r in resultados]
+        links = _coletar_links_paginados(driver, status=status)
         total_links = len(links)
 
         if status: status.markdown(f"🌐 **Abrindo resultados... {total_links} encontrados**")
@@ -81,7 +148,7 @@ def analisar_links(url_busca, palavras, status=None, progress=None):
 
         for i, (titulo, link) in enumerate(links):
             if progress:
-                progresso = 30 + int((i / total_links) * 60)
+                progresso = 30 + int(((i + 1) / max(total_links, 1)) * 60)
                 progress.progress(progresso)
 
             if status:
