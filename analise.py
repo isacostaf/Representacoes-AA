@@ -6,23 +6,26 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 from webdriver_manager.chrome import ChromeDriverManager
+
 import pandas as pd
+import requests
+from bs4 import BeautifulSoup
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 # =========================
-# 🎯 PESOS POSITIVOS
+# 🎯 PESOS
 # =========================
 PESOS_POSITIVOS = {
     "fica instituído": 7,
     "será composto": 7,
-    "fica instituído": 7,
     "designar os seguintes membros": 7,
     "alterar designações": 7,
     "para compor": 2,
-
     "comitê": 1,
     "comissao": 1,
     "conselho": 1,
-
     "grupo de trabalho": 1,
     "grupo de assessoramento": 1,
     "grupo de assessoria": 1,
@@ -32,7 +35,6 @@ PESOS_POSITIVOS = {
     "subcomissao": 1,
     "subcomite": 1,
     "subgrupo": 1,
-
     "designados": 1,
     "designado": 1,
     "nomeados": 1,
@@ -43,18 +45,13 @@ PESOS_POSITIVOS = {
     "representante": 1,
 }
 
-# =========================
-# 🚫 PESOS NEGATIVOS
-# =========================
 PESOS_NEGATIVOS = {
     "incluir": 1,
     "incluído": 1,
     "incluída": 1,
-
     "substitui": 1,
     "substituído": 1,
     "substituída": 1,
-
     "excluir": 1,
     "excluído": 1,
     "excluída": 1,
@@ -67,30 +64,56 @@ PESOS_NEGATIVOS = {
 }
 
 # =========================
-# 📄 TEXTO DO DOCUMENTO
+# 🌐 SESSION OTIMIZADA
 # =========================
-def pegar_texto(driver):
-    paragrafos = driver.find_elements(By.CLASS_NAME, "dou-paragraph")
-    return " ".join([p.text for p in paragrafos]).lower()
+def criar_session():
+    session = requests.Session()
+
+    retries = Retry(
+        total=3,
+        backoff_factor=0.5,
+        status_forcelist=[500, 502, 503, 504]
+    )
+
+    adapter = HTTPAdapter(max_retries=retries)
+
+    session.mount("http://", adapter)
+    session.mount("https://", adapter)
+
+    session.headers.update({
+        "User-Agent": "Mozilla/5.0"
+    })
+
+    return session
+
+SESSION = criar_session()
+
+# =========================
+# 📄 TEXTO (RÁPIDO)
+# =========================
+def pegar_texto_fast(url):
+    try:
+        response = SESSION.get(url, timeout=10)
+        response.raise_for_status()
+
+        soup = BeautifulSoup(response.text, "html.parser")
+        paragrafos = soup.find_all(class_="dou-paragraph")
+
+        return " ".join(p.get_text() for p in paragrafos).lower()
+
+    except Exception:
+        return ""
 
 # =========================
 # 🧠 SCORE
 # =========================
 def calcular_score(texto):
-    score_pos = sum(
-        peso for palavra, peso in PESOS_POSITIVOS.items()
-        if palavra in texto
-    )
-
-    score_neg = sum(
-        peso for palavra, peso in PESOS_NEGATIVOS.items()
-        if palavra in texto
-    )
-
+    score_pos = sum(peso for palavra, peso in PESOS_POSITIVOS.items() if palavra in texto)
+    score_neg = sum(peso for palavra, peso in PESOS_NEGATIVOS.items() if palavra in texto)
     return score_pos - score_neg
 
 # =========================
-# 🔎 BOTÃO PRÓXIMA PÁGINA
+# 🔎 BOTÃO PRÓXIMA
 # =========================
 def _encontrar_botao_proxima(driver):
     try:
@@ -113,8 +136,8 @@ def _encontrar_botao_proxima(driver):
 # =========================
 # 📄 PAGINAÇÃO
 # =========================
-def _coletar_links_paginados(driver, status=None, max_paginas=200):
-    wait = WebDriverWait(driver, 12)
+def _coletar_links_paginados(driver, max_paginas=200):
+    wait = WebDriverWait(driver, 10)
     links_unicos = []
     vistos = set()
     pagina = 1
@@ -131,31 +154,17 @@ def _coletar_links_paginados(driver, status=None, max_paginas=200):
             vistos.add(href)
             links_unicos.append((titulo if titulo else "Sem titulo", href))
 
-        # if status:
-        #     status.markdown(f"🔎 **Coletando resultados... página {pagina} ({len(links_unicos)} links únicos)**")
-
         botao_proxima = _encontrar_botao_proxima(driver)
         if not botao_proxima:
             break
 
-        url_antes = driver.current_url
         marcador = resultados[0] if resultados else None
 
-        driver.execute_script(
-            "arguments[0].scrollIntoView({block: 'center'});",
-            botao_proxima
-        )
-
-        try:
-            botao_proxima.click()
-        except Exception:
-            driver.execute_script("arguments[0].click();", botao_proxima)
+        driver.execute_script("arguments[0].click();", botao_proxima)
 
         try:
             if marcador:
                 wait.until(EC.staleness_of(marcador))
-            else:
-                wait.until(lambda d: d.current_url != url_antes)
         except TimeoutException:
             break
 
@@ -164,11 +173,29 @@ def _coletar_links_paginados(driver, status=None, max_paginas=200):
     return links_unicos
 
 # =========================
-# 🚀 ANÁLISE PRINCIPAL
+# ⚡ PROCESSAR UM LINK
+# =========================
+def processar_link(item):
+    titulo, link = item
+
+    texto = pegar_texto_fast(link)
+    score = calcular_score(texto)
+
+    positivas = [p for p in PESOS_POSITIVOS if p in texto]
+    negativas = [p for p in PESOS_NEGATIVOS if p in texto]
+
+    return {
+        "Documento": titulo,
+        "PDF": f"[PDF]({link})",
+        "Score": score,
+        "Palavras positivas": ", ".join(positivas),
+        "Palavras negativas": ", ".join(negativas),
+    }
+
+# =========================
+# 🚀 FUNÇÃO PRINCIPAL
 # =========================
 def analisar_links(url_busca, palavras_usuario, status=None, progress=None):
-    palavras = list(set(list(PESOS_POSITIVOS.keys()) + palavras_usuario))
-
     options = Options()
     options.add_argument("--headless")
 
@@ -177,44 +204,30 @@ def analisar_links(url_busca, palavras_usuario, status=None, progress=None):
         options=options
     )
 
-    resumo = []
-
     try:
         driver.get(url_busca)
-        driver.implicitly_wait(5)
 
-        links = _coletar_links_paginados(driver, status=status)
+        links = _coletar_links_paginados(driver)
         total = len(links)
 
-        if status: status.markdown(f"🌐 **Abrindo resultados... {total} encontrados**")
-        if progress: progress.progress(20)
+        if status:
+            status.markdown(f"🌐 **{total} documentos encontrados**")
 
-        for i, (titulo, link) in enumerate(links):
-            if progress:
-                progress.progress(int((i / max(total, 1)) * 100))
+        resumo = []
 
-            if status:
-                status.markdown(
-                    f"📊 **Analisando documentos {i+1}/{total}**<br><small>{titulo}</small>",
-                    unsafe_allow_html=True
-                )
+        # 🔥 PARALELIZAÇÃO
+        with ThreadPoolExecutor(max_workers=10) as executor:
+            futures = [executor.submit(processar_link, item) for item in links]
 
-            driver.get(link)
-            driver.implicitly_wait(5)
+            for i, future in enumerate(as_completed(futures)):
+                if progress:
+                    progress.progress(int((i / max(total, 1)) * 100))
 
-            texto = pegar_texto(driver)
-            score = calcular_score(texto)
-
-            positivas = [p for p in PESOS_POSITIVOS if p in texto]
-            negativas = [p for p in PESOS_NEGATIVOS if p in texto]
-
-            resumo.append({
-                "Documento": titulo,
-                "PDF": f"[PDF]({link})",
-                "Score": score,
-                "Palavras positivas": ", ".join(positivas),
-                "Palavras negativas": ", ".join(negativas),
-            })
+                try:
+                    resultado = future.result()
+                    resumo.append(resultado)
+                except Exception:
+                    continue
 
         if status:
             status.markdown("✅ Finalizado!")
@@ -225,12 +238,11 @@ def analisar_links(url_busca, palavras_usuario, status=None, progress=None):
         driver.quit()
 
 # =========================
-# 📊 TABELA FINAL (STREAMLIT)
+# 📊 TABELA
 # =========================
 def gerar_tabela(resumo):
     df = pd.DataFrame(resumo)
 
-    # evita crash se vazio
     if df.empty:
         return df
 
@@ -239,13 +251,8 @@ def gerar_tabela(resumo):
 
         if score >= 5:
             return ["background-color: #e6f4ea"] * len(row)
-
-        if score > 0:
+        elif score > 0:
             return ["background-color: #fff9c4"] * len(row)
-
         return [""] * len(row)
 
-    styled_df = df.style.apply(destacar_linha, axis=1)
-
-    # mantém HTML do link PDF funcionando
-    return styled_df
+    return df.style.apply(destacar_linha, axis=1)

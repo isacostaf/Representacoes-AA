@@ -1,5 +1,4 @@
-## atualmente utiliza:
-## mesclav3.py
+## app.py
 
 from datetime import date
 
