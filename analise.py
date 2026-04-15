@@ -131,8 +131,8 @@ def _coletar_links_paginados(driver, status=None, max_paginas=200):
             vistos.add(href)
             links_unicos.append((titulo if titulo else "Sem titulo", href))
 
-        if status:
-            status.markdown(f"🔎 Página {pagina} | {len(links_unicos)} links")
+        # if status:
+        #     status.markdown(f"🔎 **Coletando resultados... página {pagina} ({len(links_unicos)} links únicos)**")
 
         botao_proxima = _encontrar_botao_proxima(driver)
         if not botao_proxima:
@@ -186,12 +186,18 @@ def analisar_links(url_busca, palavras_usuario, status=None, progress=None):
         links = _coletar_links_paginados(driver, status=status)
         total = len(links)
 
+        if status: status.markdown(f"🌐 **Abrindo resultados... {total} encontrados**")
+        if progress: progress.progress(20)
+
         for i, (titulo, link) in enumerate(links):
             if progress:
                 progress.progress(int((i / max(total, 1)) * 100))
 
             if status:
-                status.markdown(f"📄 {i+1}/{total} - {titulo}")
+                status.markdown(
+                    f"📊 **Analisando documentos {i+1}/{total}**<br><small>{titulo}</small>",
+                    unsafe_allow_html=True
+                )
 
             driver.get(link)
             driver.implicitly_wait(5)
