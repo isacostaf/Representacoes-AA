@@ -1,4 +1,3 @@
-# pesquisa.py
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
@@ -9,96 +8,90 @@ from selenium.common.exceptions import TimeoutException
 from webdriver_manager.chrome import ChromeDriverManager
 import pandas as pd
 
-palavras_positivas = [
-    # estruturas colegiadas
-    "comitê", "comissao", "conselho", "grupo de trabalho",
-    "grupo de assessoramento", "grupo de assessoria",
-    "grupo de assessoria especial", "grupo conjunto",
-    "grupo especial", "grupo técnico", "grupo técnico de trabalho",
-    "grupo temporário", "subcomissao", "subcomite", "subgrupo",
+# =========================
+# 🎯 PESOS POSITIVOS
+# =========================
+PESOS_POSITIVOS = {
+    "fica instituído": 7,
+    "será composto": 7,
+    "fica instituído": 7,
+    "designar os seguintes membros": 7,
+    "alterar designações": 7,
+    "para compor": 2,
 
-    # ação típica de representação
-    "designados", "designado",
-    "nomeados", "nomeado", "nomear",
-    "indicados", "indicado", "indicar",
-    "nomeia", "indica",
+    "comitê": 1,
+    "comissao": 1,
+    "conselho": 1,
 
-    # composição de pessoas
-    "titular", "suplente", "membro", "membros",
-    "representante", "representantes",
-    "integrante", "integrantes",
+    "grupo de trabalho": 1,
+    "grupo de assessoramento": 1,
+    "grupo de assessoria": 1,
+    "grupo conjunto": 1,
+    "grupo especial": 1,
+    "grupo técnico": 1,
+    "subcomissao": 1,
+    "subcomite": 1,
+    "subgrupo": 1,
 
-    # cargos dentro de comitês
-    "coordenador", "coordenadora","vice-presidente",
-    "relator", "secretario", "secretária",
+    "designados": 1,
+    "designado": 1,
+    "nomeados": 1,
+    "nomeado": 1,
+    "indicados": 1,
+    "indicado": 1,
+    "membro": 1,
+    "representante": 1,
+}
 
-    # padrões institucionais fortes
-    "ficam designados", "ficam nomeados", "ficam indicados",
-    "para compor", "compor o comite", "compor o conselho",
-    "no âmbito do", "no ambito do",
+# =========================
+# 🚫 PESOS NEGATIVOS
+# =========================
+PESOS_NEGATIVOS = {
+    "incluir": 1,
+    "incluído": 1,
+    "incluída": 1,
 
-    "ficam designados para compor",
-    "ficam designados os representantes",
-    "designados para compor",
-    "composição do comitê",
-    "titular e suplente",
-    "no âmbito do comitê"
-]
+    "substitui": 1,
+    "substituído": 1,
+    "substituída": 1,
 
-palavras_negativas = [
-    # verbos normativos (muito fortes)
-    "altera", "alterado", "alterada", "alteração",
-    "modifica", "modificado", "modificada",
-    "revoga", "revogado", "revogada",
-    "revogam-se", "fica revogada", "ficam revogadas",
-    "passa a vigorar", "vigorar",
-    "substitui", "substituído", "substituída",
-    "incluir", "incluído", "incluída",
-    "excluir", "excluído", "excluída",
+    "excluir": 1,
+    "excluído": 1,
+    "excluída": 1,
+    "regulamenta": 1,
+    "institui": 1,
+    "estabelece": 1,
+    "disposições": 1,
+    "resolução": 1,
+    "licitação": 1,
+}
 
-    # estrutura de norma jurídica
-    "resolvem", "resolve-se",
-    "dispõe", "dispoe", "disposições",
-    "regulamenta", "regulamentado",
-    "estabelece", "estabelecido",
-    "institui", "instituído",
-    "define", "definido",
-
-
-    # linguagem de alteração normativa
-    "dá nova redação", "da nova redacao",
-    "passa a ter a seguinte redação",
-    "fica alterado", "ficam alterados",
-    "fica incluído", "ficam incluídos",
-    "fica excluído", "ficam excluídos",
-
-    # referência a normas existentes
-    "nos termos da", "na forma da lei",
-    "resolução",
-    "lei nº", "lei no",
-
-    #novas
-    "licitação"
-]
-
-## transforma todo o texto em texto
+# =========================
+# 📄 TEXTO DO DOCUMENTO
+# =========================
 def pegar_texto(driver):
     paragrafos = driver.find_elements(By.CLASS_NAME, "dou-paragraph")
     return " ".join([p.text for p in paragrafos]).lower()
 
-# verifica quais palavras aparecem no documento, registra
-def verificar_palavras(texto, palavras, palavras_negativas):
-    resultado_pos = {}
-    resultado_neg = {}
+# =========================
+# 🧠 SCORE
+# =========================
+def calcular_score(texto):
+    score_pos = sum(
+        peso for palavra, peso in PESOS_POSITIVOS.items()
+        if palavra in texto
+    )
 
-    for p in palavras:
-        resultado_pos[p] = p.lower() in texto
+    score_neg = sum(
+        peso for palavra, peso in PESOS_NEGATIVOS.items()
+        if palavra in texto
+    )
 
-    for p in palavras_negativas:
-        resultado_neg[p] = p.lower() in texto
+    return score_pos - score_neg
 
-    return resultado_pos, resultado_neg
-
+# =========================
+# 🔎 BOTÃO PRÓXIMA PÁGINA
+# =========================
 def _encontrar_botao_proxima(driver):
     try:
         botao = driver.find_element(By.ID, "rightArrow")
@@ -117,6 +110,9 @@ def _encontrar_botao_proxima(driver):
 
     return botao
 
+# =========================
+# 📄 PAGINAÇÃO
+# =========================
 def _coletar_links_paginados(driver, status=None, max_paginas=200):
     wait = WebDriverWait(driver, 12)
     links_unicos = []
@@ -136,7 +132,7 @@ def _coletar_links_paginados(driver, status=None, max_paginas=200):
             links_unicos.append((titulo if titulo else "Sem titulo", href))
 
         if status:
-            status.markdown(f"🔎 **Coletando resultados... página {pagina} ({len(links_unicos)} links únicos)**")
+            status.markdown(f"🔎 Página {pagina} | {len(links_unicos)} links")
 
         botao_proxima = _encontrar_botao_proxima(driver)
         if not botao_proxima:
@@ -145,7 +141,11 @@ def _coletar_links_paginados(driver, status=None, max_paginas=200):
         url_antes = driver.current_url
         marcador = resultados[0] if resultados else None
 
-        driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", botao_proxima)
+        driver.execute_script(
+            "arguments[0].scrollIntoView({block: 'center'});",
+            botao_proxima
+        )
+
         try:
             botao_proxima.click()
         except Exception:
@@ -157,142 +157,89 @@ def _coletar_links_paginados(driver, status=None, max_paginas=200):
             else:
                 wait.until(lambda d: d.current_url != url_antes)
         except TimeoutException:
-            if driver.current_url == url_antes:
-                break
+            break
 
         pagina += 1
 
     return links_unicos
 
+# =========================
+# 🚀 ANÁLISE PRINCIPAL
+# =========================
 def analisar_links(url_busca, palavras_usuario, status=None, progress=None):
-    palavras = list(set(palavras_positivas + palavras_usuario))
+    palavras = list(set(list(PESOS_POSITIVOS.keys()) + palavras_usuario))
+
     options = Options()
     options.add_argument("--headless")
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+
+    driver = webdriver.Chrome(
+        service=Service(ChromeDriverManager().install()),
+        options=options
+    )
 
     resumo = []
-    detalhes = []
-    try:
-        if status: status.markdown("🔎 **Filtrando buscas...**")
-        if progress: progress.progress(10)
 
+    try:
         driver.get(url_busca)
         driver.implicitly_wait(5)
 
         links = _coletar_links_paginados(driver, status=status)
-        total_links = len(links)
-
-        if status: status.markdown(f"🌐 **Abrindo resultados... {total_links} encontrados**")
-        if progress: progress.progress(20)
+        total = len(links)
 
         for i, (titulo, link) in enumerate(links):
             if progress:
-                progresso = 30 + int(((i + 1) / max(total_links, 1)) * 60)
-                progress.progress(progresso)
+                progress.progress(int((i / max(total, 1)) * 100))
 
             if status:
-                status.markdown(
-                    f"📊 **Analisando documentos {i+1}/{total_links}**<br><small>{titulo}</small>",
-                    unsafe_allow_html=True
-                )
+                status.markdown(f"📄 {i+1}/{total} - {titulo}")
 
             driver.get(link)
             driver.implicitly_wait(5)
 
             texto = pegar_texto(driver)
-            ## guarda em pos e neg as palavras relatuvas encontradas
-            resultado_pos, resultado_neg= verificar_palavras(texto, palavras, palavras_negativas)
-            
+            score = calcular_score(texto)
 
-            # contador positivas
-            encontradas = [p for p, v in resultado_pos.items() if v]
-            qtd = len(encontradas)
-            total = len(palavras)
-
-            # contador negativas
-            negativas_encontradas = [p for p, v in resultado_neg.items() if v]
-            qtd_neg = len(negativas_encontradas)
-            total_neg = len(palavras_negativas)
+            positivas = [p for p in PESOS_POSITIVOS if p in texto]
+            negativas = [p for p in PESOS_NEGATIVOS if p in texto]
 
             resumo.append({
                 "Documento": titulo,
                 "PDF": f"[PDF]({link})",
-                "Match": f"{qtd}/{total}",
-                "Encontradas": ", ".join(encontradas),
-                "Match Negativas": f"{qtd_neg}/{total_neg}",
-                "Negativas encontradas": ", ".join(negativas_encontradas),
+                "Score": score,
+                "Palavras positivas": ", ".join(positivas),
+                "Palavras negativas": ", ".join(negativas),
             })
 
-            detalhes.append((titulo, link, resultado_pos, resultado_neg))
-
-        if progress: progress.progress(100)
-        if status: status.markdown("✅ **Finalizado!**")
+        if status:
+            status.markdown("✅ Finalizado!")
 
         return resumo
 
     finally:
         driver.quit()
 
+# =========================
+# 📊 TABELA FINAL (STREAMLIT)
+# =========================
 def gerar_tabela(resumo):
-    dados_tabela = []
-    for r in resumo:
-        link_pdf = r["PDF"].split("(")[1].replace(")", "")
-        dados_tabela.append({
-            "Documento": r["Documento"],
-            "PDF": f'<a href="{link_pdf}" target="_blank">pdf</a>',
-            "Match": r["Match"],
-            "Palavras encontradas": r["Encontradas"],
-            "Match Negativas": r["Match Negativas"],
-            "Palavras negativas": r.get("Negativas encontradas", ""),
-        })
+    df = pd.DataFrame(resumo)
 
-    if not dados_tabela:
-        df = pd.DataFrame(columns=["Documento", "Match", "PDF", "Palavras encontradas", "Palavras negativas"])
-        df["_qtd"] = pd.Series(dtype="int64")
-        # styled_df = df.style.hide(axis="columns", subset=["_qtd"])
-        return styled_df
-
-    df = pd.DataFrame(dados_tabela)
-
-    # df["score2"] = (
-    #     df["qtd_encontradas"] * 2.0
-    #     + df["qtd_frases_pos"] * 10
-    #     - df["qtd_negativas"] * 2.5
-    # )
-
-    # quantidade de matches
-    df["_qtd"] = df["Match"].apply(lambda x: int(x.split("/")[0]))
-    df["_qtd_total"] = df["Match"].apply(lambda x: int(x.split("/")[1]))
-
-    df["_qtdn"] = df["Match Negativas"].apply(lambda x: int(x.split("/")[0]))
-    df["_qtdn_total"] = df["Match Negativas"].apply(lambda x: int(x.split("/")[1]))
-
-    # df["_qtd_fp"] = df["Match Frases Pos"].apply(lambda x: int(x.split("/")[0]))
-    # df["_qtd_fp_total"] = df["Match Frases Pos"].apply(lambda x: int(x.split("/")[1]))
-
-
-    # SCORE (pode ajustar pesos depois)
-    df["_score"] = (
-        df["_qtd"] * 2.0
-        # + df["_qtd_fp"] * 10     # positivo pesa mais
-        - df["_qtdn"] * 2.5  # negativo pesa mais ainda
-    )
+    # evita crash se vazio
+    if df.empty:
+        return df
 
     def destacar_linha(row):
+        score = row["Score"]
 
-        score = row["_score"]
-
-        # 🟢 alta chance de representação
-        if score >= 3:
+        if score >= 5:
             return ["background-color: #e6f4ea"] * len(row)
 
-        # 🟡 zona de incerteza (pode ser ou não)
-        if 0 < score < 3:
+        if score > 0:
             return ["background-color: #fff9c4"] * len(row)
 
-        # ⚪ neutro / não parece representação
         return [""] * len(row)
 
     styled_df = df.style.apply(destacar_linha, axis=1)
-    # styled_df = styled_df.hide(axis="columns", subset=["_qtd"])
+
+    # mantém HTML do link PDF funcionando
     return styled_df
