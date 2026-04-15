@@ -9,51 +9,51 @@ from analise import analisar_links, gerar_tabela
 
 st.title("Scanner Representações - MD")
 
-palavras_fixas = [
-    # estruturas colegiadas
-    "comitê", "comissao", "conselho", "grupo de trabalho",
-    "grupo de assessoramento", "grupo de assessoria",
-    "grupo de assessoria especial", "grupo conjunto",
-    "grupo especial", "grupo técnico", "grupo técnico de trabalho",
-    "grupo temporário", "subcomissao", "subcomite", "subgrupo",
+# palavras_fixas = [
+#     # estruturas colegiadas
+#     "comitê", "comissao", "conselho", "grupo de trabalho",
+#     "grupo de assessoramento", "grupo de assessoria",
+#     "grupo de assessoria especial", "grupo conjunto",
+#     "grupo especial", "grupo técnico", "grupo técnico de trabalho",
+#     "grupo temporário", "subcomissao", "subcomite", "subgrupo",
 
-    # ação típica de representação
-    "designados", "designado", "designar",
-    "nomeados", "nomeado", "nomear",
-    "indicados", "indicado", "indicar",
-    "designa", "nomeia", "indica",
+#     # ação típica de representação
+#     "designados", "designado", "designar",
+#     "nomeados", "nomeado", "nomear",
+#     "indicados", "indicado", "indicar",
+#     "designa", "nomeia", "indica",
 
-    # composição de pessoas
-    "titular", "suplente", "membro", "membros",
-    "representante", "representantes",
-    "integrante", "integrantes",
+#     # composição de pessoas
+#     "titular", "suplente", "membro", "membros",
+#     "representante", "representantes",
+#     "integrante", "integrantes",
 
-    # cargos dentro de comitês
-    "coordenador", "coordenadora",
-    "presidente", "vice-presidente",
-    "relator", "secretario", "secretária",
+#     # cargos dentro de comitês
+#     "coordenador", "coordenadora",
+#     "presidente", "vice-presidente",
+#     "relator", "secretario", "secretária",
 
-    # padrões institucionais fortes
-    "ficam designados", "ficam nomeados", "ficam indicados",
-    "para compor", "compor o comite", "compor o conselho",
-    "no âmbito do", "no ambito do",
+#     # padrões institucionais fortes
+#     "ficam designados", "ficam nomeados", "ficam indicados",
+#     "para compor", "compor o comite", "compor o conselho",
+#     "no âmbito do", "no ambito do",
 
-    "ficam designados para compor",
-    "ficam designados os representantes",
-    "designados para compor",
-    "composição do comitê",
-    "titular e suplente",
-    "no âmbito do comitê"
-]
+#     "ficam designados para compor",
+#     "ficam designados os representantes",
+#     "designados para compor",
+#     "composição do comitê",
+#     "titular e suplente",
+#     "no âmbito do comitê"
+# ]
 
 entrada = st.text_input(
     "Digite palavras-chave adicionais (opcional)",
     ""
 )
 palavras_usuario = [p.strip() for p in entrada.split(",") if p.strip()]
-palavras = list(set(palavras_fixas + palavras_usuario))
+# palavras = list(set(palavras_fixas + palavras_usuario))
 
-st.caption("Inclui automaticamente: instituir, institui, representantes, indicação, ficam designados, grupo de trabalho, comitê, comissão (e todas suas variações)")
+# st.caption("Inclui automaticamente: instituir, institui, representantes, indicação, ficam designados, grupo de trabalho, comitê, comissão (e todas suas variações)")
 
 col_data_inicial, col_data_final = st.columns(2)
 with col_data_inicial:
@@ -78,7 +78,7 @@ if st.button("Verificar TODOS os resultados"):
 
     # Analisamos os arquivos
     # Funcao do arquivo analise.py
-    resumo = analisar_links(url_busca, palavras, status=status, progress=progress)
+    resumo = analisar_links(url_busca, palavras_usuario, status=status, progress=progress)
 
     # Geramos tabela
     # Funcao do arquivo analise.py
@@ -87,8 +87,8 @@ if st.button("Verificar TODOS os resultados"):
     st.subheader("📊 Resultado")
     st.markdown(styled_df.to_html(escape=False), unsafe_allow_html=True)
 
-    st.markdown(
-        f"<p style='color:gray; font-size:12px;'>Palavras pesquisadas: {', '.join(palavras)}</p>",
-        unsafe_allow_html=True
-    )
+    ##st.markdown(
+##        f"<p style='color:gray; font-size:12px;'>Palavras pesquisadas: {', '.join(palavras)}</p>",
+##        unsafe_allow_html=True
+##    )
     st.caption(f"Período consultado: {data_inicial_str} a {data_final_str}")   
