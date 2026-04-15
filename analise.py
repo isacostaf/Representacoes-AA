@@ -9,6 +9,46 @@ from selenium.common.exceptions import TimeoutException
 from webdriver_manager.chrome import ChromeDriverManager
 import pandas as pd
 
+frases_positivas = [
+    "encargo","designações", "Fica instituído"
+]
+
+palavras_positivas = [
+    # estruturas colegiadas
+    "comitê", "comissao", "conselho", "grupo de trabalho",
+    "grupo de assessoramento", "grupo de assessoria",
+    "grupo de assessoria especial", "grupo conjunto",
+    "grupo especial", "grupo técnico", "grupo técnico de trabalho",
+    "grupo temporário", "subcomissao", "subcomite", "subgrupo",
+
+    # ação típica de representação
+    "designados", "designado",
+    "nomeados", "nomeado", "nomear",
+    "indicados", "indicado", "indicar",
+    "nomeia", "indica",
+
+    # composição de pessoas
+    "titular", "suplente", "membro", "membros",
+    "representante", "representantes",
+    "integrante", "integrantes",
+
+    # cargos dentro de comitês
+    "coordenador", "coordenadora","vice-presidente",
+    "relator", "secretario", "secretária",
+
+    # padrões institucionais fortes
+    "ficam designados", "ficam nomeados", "ficam indicados",
+    "para compor", "compor o comite", "compor o conselho",
+    "no âmbito do", "no ambito do",
+
+    "ficam designados para compor",
+    "ficam designados os representantes",
+    "designados para compor",
+    "composição do comitê",
+    "titular e suplente",
+    "no âmbito do comitê"
+]
+
 palavras_negativas = [
     # verbos normativos (muito fortes)
     "altera", "alterado", "alterada", "alteração",
@@ -21,16 +61,13 @@ palavras_negativas = [
     "excluir", "excluído", "excluída",
 
     # estrutura de norma jurídica
-    "resolve", "resolvem", "resolve-se",
+    "resolvem", "resolve-se",
     "dispõe", "dispoe", "disposições",
     "regulamenta", "regulamentado",
     "estabelece", "estabelecido",
     "institui", "instituído",
     "define", "definido",
 
-    # estrutura de artigo (fortíssimo sinal negativo)
-    "art.", "artigo", "§", "parágrafo",
-    "inciso", "alínea", "caput",
 
     # linguagem de alteração normativa
     "dá nova redação", "da nova redacao",
@@ -41,17 +78,23 @@ palavras_negativas = [
 
     # referência a normas existentes
     "nos termos da", "na forma da lei",
-    "decreto", "portaria", "resolução",
-    "lei nº", "lei no", "decreto nº", "portaria nº"
+    "resolução",
+    "lei nº", "lei no",
+
+    #novas
+    "licitação"
 ]
 
+## transforma todo o texto em texto
 def pegar_texto(driver):
     paragrafos = driver.find_elements(By.CLASS_NAME, "dou-paragraph")
     return " ".join([p.text for p in paragrafos]).lower()
 
-def verificar_palavras(texto, palavras, palavras_negativas):
+# verifica quais palavras aparecem no documento, registra
+def verificar_palavras(texto, palavras, palavras_negativas, frases_positivas):
     resultado_pos = {}
     resultado_neg = {}
+    resultado_frases_pos = {}
 
     for p in palavras:
         resultado_pos[p] = p.lower() in texto
@@ -59,7 +102,10 @@ def verificar_palavras(texto, palavras, palavras_negativas):
     for p in palavras_negativas:
         resultado_neg[p] = p.lower() in texto
 
-    return resultado_pos, resultado_neg
+    for p in frases_positivas:
+        resultado_frases_pos[p] = p.lower() in texto
+
+    return resultado_pos, resultado_neg, resultado_frases_pos
 
 def _encontrar_botao_proxima(driver):
     try:
@@ -126,7 +172,8 @@ def _coletar_links_paginados(driver, status=None, max_paginas=200):
 
     return links_unicos
 
-def analisar_links(url_busca, palavras, status=None, progress=None):
+def analisar_links(url_busca, palavras_usuario, status=None, progress=None):
+    palavras = list(set(palavras_positivas + palavras_usuario))
     options = Options()
     options.add_argument("--headless")
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
@@ -161,8 +208,9 @@ def analisar_links(url_busca, palavras, status=None, progress=None):
             driver.implicitly_wait(5)
 
             texto = pegar_texto(driver)
-            resultado_pos, resultado_neg = verificar_palavras(texto, palavras, palavras_negativas)
-            negativas_encontradas = [p for p, v in resultado_neg.items() if v]
+            ## guarda em pos e neg as palavras relatuvas encontradas
+            resultado_pos, resultado_neg, resultado_frases_pos = verificar_palavras(texto, palavras, palavras_negativas, frases_positivas)
+            
 
             # contador positivas
             encontradas = [p for p, v in resultado_pos.items() if v]
@@ -170,9 +218,13 @@ def analisar_links(url_busca, palavras, status=None, progress=None):
             total = len(palavras)
 
             # contador negativas
-            encontradas_neg = [p for p, v in resultado_neg.items() if v]
-            qtd_neg = len(encontradas_neg)
+            negativas_encontradas = [p for p, v in resultado_neg.items() if v]
+            qtd_neg = len(negativas_encontradas)
             total_neg = len(palavras_negativas)
+
+            frases_positivas_encontradas = [p for p, v in resultado_frases_pos.items() if v]
+            qtd_f_pos = len(frases_positivas_encontradas)
+            total_f_pos = len(frases_positivas)
 
             resumo.append({
                 "Documento": titulo,
@@ -180,7 +232,13 @@ def analisar_links(url_busca, palavras, status=None, progress=None):
                 "Match": f"{qtd}/{total}",
                 "Encontradas": ", ".join(encontradas),
                 "Match Negativas": f"{qtd_neg}/{total_neg}",
-                "Negativas encontradas": ", ".join(negativas_encontradas)
+                "Negativas encontradas": ", ".join(negativas_encontradas),
+                "Match Frases Pos": f"{qtd_f_pos}/{total_f_pos}",
+                "Frases Pos": ", ".join(frases_positivas_encontradas),
+                # 👇 NOVO (numérico puro)
+                "qtd_encontradas": qtd,
+                "qtd_frases_pos": qtd_f_pos,
+                "qtd_negativas": qtd_neg
             })
 
             detalhes.append((titulo, link, resultado_pos, resultado_neg))
@@ -203,34 +261,49 @@ def gerar_tabela(resumo):
             "Match": r["Match"],
             "Palavras encontradas": r["Encontradas"],
             "Match Negativas": r["Match Negativas"],
-            "Palavras negativas": r.get("Negativas encontradas", "")
+            "Palavras negativas": r.get("Negativas encontradas", ""),
+            "Match Frases Pos": r["Match Frases Pos"],
+            "Frases Pos": r.get("Frases Pos", ""),
+            "qtd_encontradas": r["qtd_encontradas"],
+            "qtd_frases_pos": r["qtd_frases_pos"],
+            "qtd_negativas": r["qtd_negativas"]
         })
 
     if not dados_tabela:
         df = pd.DataFrame(columns=["Documento", "Match", "PDF", "Palavras encontradas", "Palavras negativas"])
         df["_qtd"] = pd.Series(dtype="int64")
-        styled_df = df.style.hide(axis="columns", subset=["_qtd"])
+        # styled_df = df.style.hide(axis="columns", subset=["_qtd"])
         return styled_df
 
     df = pd.DataFrame(dados_tabela)
 
-    # quantidade de matches
-    df["_qtd"] = df["Match"].apply(lambda x: int(x.split("/")[0]))
-    df["_qtd_total"] = df["Match"].apply(lambda x: int(x.split("/")[1]))
-
-    df["_qtdn"] = df["Match Negativas"].apply(lambda x: int(x.split("/")[0]))
-    df["_qtdn_total"] = df["Match Negativas"].apply(lambda x: int(x.split("/")[1]))
-
-
-    # SCORE (pode ajustar pesos depois)
-    df["_score"] = (
-        df["_qtd"] * 2.0     # positivo pesa mais
-        - df["_qtdn"] * 2.5  # negativo pesa mais ainda
+    df["score2"] = (
+        df["qtd_encontradas"] * 2.0
+        + df["qtd_frases_pos"] * 10
+        - df["qtd_negativas"] * 2.5
     )
+
+    # # quantidade de matches
+    # df["_qtd"] = df["Match"].apply(lambda x: int(x.split("/")[0]))
+    # df["_qtd_total"] = df["Match"].apply(lambda x: int(x.split("/")[1]))
+
+    # df["_qtdn"] = df["Match Negativas"].apply(lambda x: int(x.split("/")[0]))
+    # df["_qtdn_total"] = df["Match Negativas"].apply(lambda x: int(x.split("/")[1]))
+
+    # df["_qtd_fp"] = df["Match Frases Pos"].apply(lambda x: int(x.split("/")[0]))
+    # df["_qtd_fp_total"] = df["Match Frases Pos"].apply(lambda x: int(x.split("/")[1]))
+
+
+    # # SCORE (pode ajustar pesos depois)
+    # df["_score"] = (
+    #     df["_qtd"] * 2.0
+    #     + df["_qtd_fp"] * 10     # positivo pesa mais
+    #     - df["_qtdn"] * 2.5  # negativo pesa mais ainda
+    # )
 
     def destacar_linha(row):
 
-        score = row["_score"]
+        score = row["score2"]
 
         # 🟢 alta chance de representação
         if score >= 3:
@@ -244,5 +317,5 @@ def gerar_tabela(resumo):
         return [""] * len(row)
 
     styled_df = df.style.apply(destacar_linha, axis=1)
-    styled_df = styled_df.hide(axis="columns", subset=["_qtd"])
+    # styled_df = styled_df.hide(axis="columns", subset=["_qtd"])
     return styled_df
