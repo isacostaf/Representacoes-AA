@@ -73,7 +73,14 @@ if st.button("Verificar TODOS os resultados"):
     st.markdown(styled_df.to_html(escape=False), unsafe_allow_html=True)
 
     # Gerar CSV
-    gerar_csv_relatorio(resumo)
+    csv = gerar_csv_relatorio(resumo)
+
+    st.download_button(
+        label="📥 Baixar CSV",
+        data=csv,
+        file_name="relatorio.csv",
+        mime="text/csv"
+    )
 
     # Palavras usadas
     st.markdown(
