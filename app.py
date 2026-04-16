@@ -5,6 +5,7 @@ from datetime import date
 import streamlit as st
 from linkbusca import obter_link_busca
 from analise import analisar_links, gerar_tabela
+from gerar_relatorio import gerar_csv_relatorio
 
 st.title("Scanner Representações - MD")
 
@@ -49,14 +50,15 @@ entrada = st.text_input(
     "Digite palavras-chave adicionais (opcional)",
     ""
 )
+
 palavras_usuario = [p.strip() for p in entrada.split(",") if p.strip()]
 # palavras = list(set(palavras_fixas + palavras_usuario))
 
-# st.caption("Inclui automaticamente: instituir, institui, representantes, indicação, ficam designados, grupo de trabalho, comitê, comissão (e todas suas variações)")
-
 col_data_inicial, col_data_final = st.columns(2)
+
 with col_data_inicial:
     data_inicial = st.date_input("Data inicial", value=date.today(), format="DD/MM/YYYY")
+
 with col_data_final:
     data_final = st.date_input("Data final", value=date.today(), format="DD/MM/YYYY")
 
@@ -75,12 +77,7 @@ if st.button("Verificar TODOS os resultados"):
     # Funcao do arquivo linkbusca.py
     url_busca = obter_link_busca(data_inicial_str, data_final_str)
 
-    # Analisamos os arquivos
-    # Funcao do arquivo analise.py
     resumo = analisar_links(url_busca, palavras_usuario, status=status, progress=progress)
-
-    # Geramos tabela
-    # Funcao do arquivo analise.py
     styled_df = gerar_tabela(resumo)
 
     st.subheader("📊 Resultado")
@@ -104,8 +101,14 @@ if st.button("Verificar TODOS os resultados"):
     # Tabela
     st.markdown(styled_df.to_html(escape=False), unsafe_allow_html=True)
 
-    ##st.markdown(
-##        f"<p style='color:gray; font-size:12px;'>Palavras pesquisadas: {', '.join(palavras)}</p>",
-##        unsafe_allow_html=True
-##    )
-    st.caption(f"Período consultado: {data_inicial_str} a {data_final_str}")   
+    # Gerar CSV
+    csv = gerar_csv_relatorio(resumo)
+
+    st.download_button(
+        label="📥 Baixar CSV",
+        data=csv,
+        file_name="relatorio.csv",
+        mime="text/csv"
+    )
+
+    st.caption(f"Período consultado: {data_inicial_str} a {data_final_str}")
