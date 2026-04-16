@@ -1,11 +1,13 @@
 ## app.py
-
 from datetime import date
-
 import streamlit as st
 from linkbusca import obter_link_busca
 from analise import analisar_links, gerar_tabela
+from gerar_relatorio import gerar_csv_relatorio_downloud
 from gerar_relatorio import gerar_csv_relatorio
+from baixar_pdf import baixar_pdf
+from baixar_pdf import criar_zip
+import pathlib as path
 
 st.title("Scanner Representações - MD")
 
@@ -80,6 +82,8 @@ if st.button("Verificar TODOS os resultados"):
     resumo = analisar_links(url_busca, palavras_usuario, status=status, progress=progress)
     styled_df = gerar_tabela(resumo)
 
+
+
     st.subheader("📊 Resultado")
 
     # Legenda
@@ -100,15 +104,36 @@ if st.button("Verificar TODOS os resultados"):
 
     # Tabela
     st.markdown(styled_df.to_html(escape=False), unsafe_allow_html=True)
-
+    
     # Gerar CSV
-    csv = gerar_csv_relatorio(resumo)
+    gerar_csv_relatorio(resumo)
+    csv = gerar_csv_relatorio_downloud(resumo)
 
+    # baixar pdf
+    baixar_pdf()
+    
     st.download_button(
         label="📥 Baixar CSV",
         data=csv,
         file_name="relatorio.csv",
         mime="text/csv"
     )
+
+    col1, col2 = st.columns(2)
+    with col1:
+        st.download_button(
+            label="📥 Alta Chance",
+            data=criar_zip("pdfs/alta_chance"),
+            file_name="alta_chance.zip",
+            mime="application/zip"
+        )
+
+    with col2:
+        st.download_button(
+            label="📥 Talvez",
+            data=criar_zip("pdfs/talvez"),
+            file_name="talvez.zip",
+            mime="application/zip"
+        )
 
     st.caption(f"Período consultado: {data_inicial_str} a {data_final_str}")
