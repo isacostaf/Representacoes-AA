@@ -9,6 +9,8 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 
 def obter_link_busca(data_inicial_str, data_final_str):
+
+    #docker
     options = webdriver.ChromeOptions()
     options.binary_location = "/usr/bin/chromium"
     options.add_argument("--headless=new")
@@ -19,6 +21,7 @@ def obter_link_busca(data_inicial_str, data_final_str):
         service=Service("/usr/bin/chromedriver"),
         options=options
     )
+    #docker
 
     try:
         driver.get("https://www.in.gov.br/materia")
