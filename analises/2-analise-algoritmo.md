@@ -1,6 +1,11 @@
 ### IA 2.0
 f76177767301b9dfd7c898b36d70d918053b9557
 
+**Laudo:**
+Redução de erro em: 81.25%
+Menos Talvez Negativos
+Ainda possui Falsos Positivos e Talvez Negativos no dia **10 de abril!**
+
 **checar:**
 [ ] 10 de abril
 
