@@ -1,7 +1,7 @@
-.env.local
 .env
 /downloads_pdfs/*
 relatorio.csv
 /__pycache__/*
 /.vscode/*
 /doc/*
+.DS_Store
