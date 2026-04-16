@@ -251,7 +251,7 @@ def gerar_tabela(resumo):
 
         if score >= 5:
             return ["background-color: #e6f4ea"] * len(row)
-        elif score > 0:
+        elif score > 2:
             return ["background-color: #fff9c4"] * len(row)
         return [""] * len(row)
 
