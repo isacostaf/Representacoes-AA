@@ -1,11 +1,10 @@
 import pandas as pd
 
-def gerar_csv_relatorio(resumo, caminho_saida="relatorio.csv"):
+def gerar_csv_relatorio(resumo):
     df = pd.DataFrame(resumo)
 
     if df.empty:
-        df.to_csv(caminho_saida, index=False, encoding="utf-8")
-        return
+        return ""
 
     # remove markdown da coluna PDF
     if "PDF" in df.columns:
@@ -16,10 +15,10 @@ def gerar_csv_relatorio(resumo, caminho_saida="relatorio.csv"):
             .fillna(df["PDF"])
         )
 
-    # garante que Score é numérico
+    # garante Score
     df["Score"] = pd.to_numeric(df.get("Score", 0), errors="coerce").fillna(0)
 
-    # classificação baseada no seu padrão visual
+    # classificação
     def classificar(score):
         if score >= 5:
             return "Alta chance"
@@ -30,13 +29,13 @@ def gerar_csv_relatorio(resumo, caminho_saida="relatorio.csv"):
 
     df["Classificação"] = df["Score"].apply(classificar)
 
-    # ordenar pelos melhores (opcional)
+    # ordena
     df = df.sort_values(by="Score", ascending=False)
 
-    # 🔥 CSV FINAL (sem Score)
-    df.to_csv(
-        caminho_saida,
-        columns=["Documento", "PDF", "Classificação"],
+    # 🔥 gera CSV em string (não salva arquivo)
+    csv = df[["Documento", "PDF", "Classificação"]].to_csv(
         index=False,
         encoding="utf-8"
     )
+
+    return csv
