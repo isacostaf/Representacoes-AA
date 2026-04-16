@@ -84,6 +84,24 @@ if st.button("Verificar TODOS os resultados"):
     styled_df = gerar_tabela(resumo)
 
     st.subheader("📊 Resultado")
+
+    # Legenda
+    st.markdown("""
+    <div style="font-size:14px; margin-bottom:10px;">
+    🟢 <b>Verde:</b> cerca de 90% de chance de ser uma representação correta.<br>
+    🟡 <b>Amarelo:</b> provavelmente <b>não</b> é uma representação, mas vale a pena conferir manualmente.
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Aviso importante
+    st.markdown("""
+    <div style="font-size:13px; color:#b00020; margin-bottom:15px;">
+    ⚠️ <b>Atenção:</b> Esta análise é feita por IA e pode conter erros. 
+    A verificação humana continua sendo essencial e não deve ser dispensada.
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Tabela
     st.markdown(styled_df.to_html(escape=False), unsafe_allow_html=True)
 
     ##st.markdown(
