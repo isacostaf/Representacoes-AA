@@ -255,7 +255,9 @@ def analisar_links(url_busca, palavras_usuario, status=None, progress=None):
 
             for i, future in enumerate(as_completed(futures)):
                 if progress:
-                    progress.progress(int((i / max(total, 1)) * 100))
+                    concluido = i + 1
+                    percentual = int((concluido / max(total, 1)) * 100)
+                    progress.progress(percentual)
 
                 try:
                     resultado = future.result()
