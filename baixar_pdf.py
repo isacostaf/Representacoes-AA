@@ -32,14 +32,13 @@ def renomear(texto: str) -> str:
 
 def criar_driver():
 
-    options = webdriver.ChromeOptions()
-    options.binary_location = "/usr/bin/chromium"
+    options = Options()
     options.add_argument("--headless=new")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
 
     driver = webdriver.Chrome(
-        service=Service("/usr/bin/chromedriver"),
+        service=Service(ChromeDriverManager().install()),
         options=options
     )
 

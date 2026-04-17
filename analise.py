@@ -227,14 +227,13 @@ def processar_link(item):
 # =========================
 def analisar_links(url_busca, palavras_usuario, status=None, progress=None):
     
-    options = webdriver.ChromeOptions()
-    options.binary_location = "/usr/bin/chromium"
+    options = Options()
     options.add_argument("--headless=new")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
 
     driver = webdriver.Chrome(
-        service=Service("/usr/bin/chromedriver"),
+        service=Service(ChromeDriverManager().install()),
         options=options
     )
     
@@ -255,8 +254,9 @@ def analisar_links(url_busca, palavras_usuario, status=None, progress=None):
 
             for i, future in enumerate(as_completed(futures)):
                 if progress:
-                    progress.progress(int((i / max(total, 1)) * 100))
-
+                    concluido = i + 1
+                    percentual = int((concluido / max(total, 1)) * 100)
+                    progress.progress(percentual)
                 try:
                     resultado = future.result()
                     resumo.append(resultado)
