@@ -22,6 +22,7 @@ PESOS_POSITIVOS = {
     "será composto": 7,
     "designar os seguintes membros": 7,
     "alterar designações": 7,
+    "designar como membros": 7,
     "para compor": 2,
     "comitê": 1,
     "comissao": 1,
@@ -43,6 +44,7 @@ PESOS_POSITIVOS = {
     "indicado": 1,
     "membro": 1,
     "representante": 1,
+    "representantes": 1,
 }
 
 PESOS_NEGATIVOS = {
@@ -62,6 +64,25 @@ PESOS_NEGATIVOS = {
     "resolução": 1,
     "licitação": 1,
 }
+
+# =========================
+# 🎯 REGRA FORTE: REPRESENTAÇÃO
+# =========================
+def detectar_representacao(texto):
+    texto = texto.lower()
+
+    tem_designar = "designar" in texto
+    tem_representante = "representante" in texto or "representantes" in texto
+
+    # padrão MUITO forte
+    if "representantes dos seguintes órgãos" in texto:
+        return 10
+
+    # combinação principal
+    if tem_designar and tem_representante:
+        return 8
+
+    return 0
 
 # =========================
 # 🌐 SESSION OTIMIZADA
@@ -110,7 +131,11 @@ def pegar_texto_fast(url):
 def calcular_score(texto):
     score_pos = sum(peso for palavra, peso in PESOS_POSITIVOS.items() if palavra in texto)
     score_neg = sum(peso for palavra, peso in PESOS_NEGATIVOS.items() if palavra in texto)
-    return score_pos - score_neg
+
+    # 🔥 NOVA REGRA
+    score_rep = detectar_representacao(texto)
+
+    return score_pos - score_neg + score_rep
 
 # =========================
 # 🔎 BOTÃO PRÓXIMA
@@ -255,7 +280,7 @@ def gerar_tabela(resumo):
 
         if score >= 5:
             return ["background-color: #e6f4ea"] * len(row)
-        elif score > 0:
+        elif score > 2:
             return ["background-color: #fff9c4"] * len(row)
         return [""] * len(row)
 
