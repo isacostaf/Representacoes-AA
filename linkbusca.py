@@ -11,13 +11,14 @@ from selenium.webdriver.chrome.options import Options
 
 def obter_link_busca(data_inicial_str, data_final_str):
 
-    options = Options()
+    options = webdriver.ChromeOptions()
+    options.binary_location = "/usr/bin/chromium"
     options.add_argument("--headless=new")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
 
     driver = webdriver.Chrome(
-        service=Service(ChromeDriverManager().install()),
+        service=Service("/usr/bin/chromedriver"),
         options=options
     )
 

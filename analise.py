@@ -227,16 +227,17 @@ def processar_link(item):
 # =========================
 def analisar_links(url_busca, palavras_usuario, status=None, progress=None):
     
-    options = Options()
+    options = webdriver.ChromeOptions()
+    options.binary_location = "/usr/bin/chromium"
     options.add_argument("--headless=new")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
 
     driver = webdriver.Chrome(
-        service=Service(ChromeDriverManager().install()),
+        service=Service("/usr/bin/chromedriver"),
         options=options
     )
-
+    
     try:
         driver.get(url_busca)
 
