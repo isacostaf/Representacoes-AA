@@ -197,7 +197,6 @@ def processar_link(item):
 # =========================
 def analisar_links(url_busca, palavras_usuario, status=None, progress=None):
     
-    # docker 
     options = webdriver.ChromeOptions()
     options.binary_location = "/usr/bin/chromium"
     options.add_argument("--headless=new")
@@ -208,7 +207,6 @@ def analisar_links(url_busca, palavras_usuario, status=None, progress=None):
         service=Service("/usr/bin/chromedriver"),
         options=options
     )
-    #docker
 
     try:
         driver.get(url_busca)

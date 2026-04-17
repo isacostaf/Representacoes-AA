@@ -31,7 +31,6 @@ def renomear(texto: str) -> str:
 
 
 def criar_driver():
-    # docker 
     options = webdriver.ChromeOptions()
     options.binary_location = "/usr/bin/chromium"
     options.add_argument("--headless=new")
@@ -42,8 +41,7 @@ def criar_driver():
         service=Service("/usr/bin/chromedriver"),
         options=options
     )
-    #docker
-
+    return driver
 
 def imprimir_pagina_em_pdf(driver, url: str, caminho_saida: Path, timeout: int = 30) -> None:
     driver.get(url)

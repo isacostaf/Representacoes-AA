@@ -6,11 +6,11 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.options import Options
 
 
 def obter_link_busca(data_inicial_str, data_final_str):
 
-    #docker
     options = webdriver.ChromeOptions()
     options.binary_location = "/usr/bin/chromium"
     options.add_argument("--headless=new")
@@ -21,8 +21,7 @@ def obter_link_busca(data_inicial_str, data_final_str):
         service=Service("/usr/bin/chromedriver"),
         options=options
     )
-    #docker
-
+    
     try:
         driver.get("https://www.in.gov.br/materia")
 

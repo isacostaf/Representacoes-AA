@@ -111,34 +111,28 @@ if st.button("Verificar TODOS os resultados"):
     # Tabela
     st.markdown(styled_df.to_html(escape=False), unsafe_allow_html=True)
     
-    
+    st.download_button(
+        label="📥 Baixar CSV",
+        data=csv,
+        file_name="relatorio.csv",
+        mime="text/csv",
+        on_click="ignore"
+    )
 
-    col1, col2, col3 = st.columns()
-    with col1:
-        st.download_button(
-            label="📥 Baixar CSV",
-            data=csv,
-            file_name="relatorio.csv",
-            mime="text/csv",
-            on_click="ignore"
-        )
-    
-    with col2:
-        st.download_button(
-            label="📥 Alta Chance",
-            data=criar_zip("pdfs/alta_chance"),
-            file_name="alta_chance.zip",
-            mime="application/zip",
-            on_click="ignore"
-        )
+    st.download_button(
+        label="📥 Alta Chance",
+        data=criar_zip("pdfs/alta_chance"),
+        file_name="alta_chance.zip",
+        mime="application/zip",
+        on_click="ignore"
+    )
 
-    with col3:
-        st.download_button(
-            label="📥 Talvez",
-            data=criar_zip("pdfs/talvez"),
-            file_name="talvez.zip",
-            mime="application/zip",
-            on_click="ignore"
-        )
+    st.download_button(
+        label="📥 Talvez",
+        data=criar_zip("pdfs/talvez"),
+        file_name="talvez.zip",
+        mime="application/zip",
+        on_click="ignore"
+    )
 
     st.caption(f"Período consultado: {data_inicial_str} a {data_final_str}")
