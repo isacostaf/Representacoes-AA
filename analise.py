@@ -209,9 +209,14 @@ def processar_link(item):
     positivas = [p for p in PESOS_POSITIVOS if p in texto]
     negativas = [p for p in PESOS_NEGATIVOS if p in texto]
 
+    botao_pdf = (
+        f'<a href="{link}" target="_blank">'
+        'Abrir PDF</a>'
+    )
+
     return {
         "Documento": titulo,
-        "PDF": f"[PDF]({link})",
+        "PDF": botao_pdf,
         "Score": score,
         "Palavras positivas": ", ".join(positivas),
         "Palavras negativas": ", ".join(negativas),
@@ -222,14 +227,13 @@ def processar_link(item):
 # =========================
 def analisar_links(url_busca, palavras_usuario, status=None, progress=None):
     
-    options = webdriver.ChromeOptions()
-    options.binary_location = "/usr/bin/chromium"
+    options = Options()
     options.add_argument("--headless=new")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
 
     driver = webdriver.Chrome(
-        service=Service("/usr/bin/chromedriver"),
+        service=Service(ChromeDriverManager().install()),
         options=options
     )
 

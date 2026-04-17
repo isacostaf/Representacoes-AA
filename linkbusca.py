@@ -11,17 +11,16 @@ from selenium.webdriver.chrome.options import Options
 
 def obter_link_busca(data_inicial_str, data_final_str):
 
-    options = webdriver.ChromeOptions()
-    options.binary_location = "/usr/bin/chromium"
+    options = Options()
     options.add_argument("--headless=new")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
 
     driver = webdriver.Chrome(
-        service=Service("/usr/bin/chromedriver"),
+        service=Service(ChromeDriverManager().install()),
         options=options
     )
-    
+
     try:
         driver.get("https://www.in.gov.br/materia")
 
