@@ -22,6 +22,7 @@ PESOS_POSITIVOS = {
     "será composto": 7,
     "designar os seguintes membros": 7,
     "alterar designações": 7,
+    "designar como membros": 7,
     "para compor": 2,
     "comitê": 1,
     "comissao": 1,
