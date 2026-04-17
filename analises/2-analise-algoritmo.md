@@ -71,7 +71,8 @@ manteve
 
 **6 de abril**
 resultado esperado:
--vazio-
+PORTARIA DE PESSOAL SE/CC/PR Nº 294, DE 31 DE MARÇO DE 2026 - talvez, 1
+PORTARIA DE PESSOAL SE/CC/PR Nº 293, DE 31 DE MARÇO DE 2026 - talvez, 1
 
 resultado 1.0:
 PORTARIA DE PESSOAL SE/CC/PR Nº 294, DE 31 DE MARÇO DE 2026 - talvez, 1
@@ -79,16 +80,17 @@ PORTARIA DE PESSOAL SE/CC/PR Nº 293, DE 31 DE MARÇO DE 2026 - talvez, 1
 PORTARIA DIGER-MD N° 1.810, de 2 de abril de 2026 - talvez, 2
 
 laudo 1.0::
-bom funcionamento,
-3 talvez negativos
+mal funcionamento
+2 talvez positivos
+1 talvez negativo
 
 ---
 resultado 2.0:
 -vazio-
 
 laudo 2.0:
-perfeito
-melhoramento
+mal funcionamento
+piorou
 
 
 **7 de abril**
@@ -160,9 +162,10 @@ PORTARIA GM/MPO Nº 103, DE 9 DE ABRIL DE 2026 - talvez, 1
 PORTARIA DE PESSOAL MTUR N° 70, DE 8 DE ABRIL DE 2026 - talvez, 4
 
 laudo 1.0::
-mal funcionamento, 
-1 positivo negativo
-2 talvez negativos
+bom funcionamento, 
+1 talvez negativo
+1 talvez positivo
+1 certeza positivo
 
 ---
 resultado 2.0:
@@ -170,8 +173,10 @@ PORTARIA SEPESD-MD N° 1.886, de 8 de abril de 2026 - certeza, 5
 PORTARIA DE PESSOAL MTUR N° 70, DE 8 DE ABRIL DE 2026 - talvez, 4
 
 laudo 2.0:
-mal funcionamento,
-melhoramento anyways
+bom funcionamento,
+1 talvez positivo
+1 certeza positivo
+melhoramento
 
 **13 de abril**
 resultado esperado:

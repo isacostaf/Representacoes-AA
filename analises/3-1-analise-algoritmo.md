@@ -1,12 +1,12 @@
-## IA 3.1
+## IA 4.0
 add regra que encontra designar .* representantes
 e a palavra representantes
 **Laudo:**
 
 
 **checar:**
-[ ] 10 de abril
-[ ] 6 de abril
+[x] 10 de abril - na vdd eram representacoes que nao estavam no sistema
+[x] 6 de abril - na vdd eram representacoes que nao estavam no sistema
 
 **1 de abril**
 resultado esperado:
@@ -29,10 +29,10 @@ perfeito funcionamento
 melhorou.
 
 ---
-resultado 3.1:
+resultado 4.0:
 -vazio-
 
-laudo 3.1:
+laudo 4.0:
 perfeito funcionamento
 manteve.
 
@@ -58,10 +58,10 @@ perfeito
 melhoramento
 
 ---
-resultado 3.1:
+resultado 4.0:
 -vazio-
 
-laudo 3.1:
+laudo 4.0:
 perfeito
 manteve
 
@@ -84,17 +84,18 @@ perfeito
 manteve
 
 ---
-resultado 3.1:
+resultado 4.0:
 SEM BUSCAS - nao houve publicacao no diario oficial com ministerio da defesa
 
-laudo 3.1:
+laudo 4.0:
 perfeito
 manteve
 
 
 **6 de abril**
 resultado esperado:
--vazio-
+PORTARIA DE PESSOAL SE/CC/PR Nº 294, DE 31 DE MARÇO DE 2026 - talvez, 1
+PORTARIA DE PESSOAL SE/CC/PR Nº 293, DE 31 DE MARÇO DE 2026 - talvez, 1
 
 resultado 1.0:
 PORTARIA DE PESSOAL SE/CC/PR Nº 294, DE 31 DE MARÇO DE 2026 - talvez, 1
@@ -102,25 +103,25 @@ PORTARIA DE PESSOAL SE/CC/PR Nº 293, DE 31 DE MARÇO DE 2026 - talvez, 1
 PORTARIA DIGER-MD N° 1.810, de 2 de abril de 2026 - talvez, 2
 
 laudo 1.0::
-bom funcionamento,
-3 talvez negativos
+mal funcionamento
+2 talvez positivos
+1 talvez negativo
 
 ---
 resultado 2.0:
 -vazio-
 
 laudo 2.0:
-perfeito
-melhoramento
+mal funcionamento
+piorou
 
 ---
-resultado 3.1:
+resultado 4.0:
 PORTARIA DE PESSOAL SE/CC/PR Nº 293, DE 31 DE MARÇO DE 2026, 9
 PORTARIA DE PESSOAL SE/CC/PR Nº 294, DE 31 DE MARÇO DE 2026, 9
 
-laudo 3.1:
-mal funcionamento, 
-piorou
+laudo 4.0:
+perfeito melhorou
 
 
 **7 de abril**
@@ -143,10 +144,10 @@ perfeito
 manteve
 
 ---
-resultado 3.1:
+resultado 4.0:
 PORTARIA Nº 13, DE 6 DE ABRIL DE 2026 - certeza, 7
 
-laudo 3.1:
+laudo 4.0:
 perfeito
 manteve
 
@@ -169,10 +170,10 @@ laudo 2.0:
 perfeito
 melhoramento
 
-resultado 3.1:
+resultado 4.0:
 -vazio-
 
-laudo 3.1:
+laudo 4.0:
 perfeito
 manteve
 
@@ -198,7 +199,7 @@ perfeito
 melhoramento
 
 ---
-resultado 3.1:
+resultado 4.0:
 PORTARIA GM-MD Nº 1.871, de 7 de abril de 2026 - certeza, 13
 
 laudo 2.0:
@@ -215,9 +216,10 @@ PORTARIA GM/MPO Nº 103, DE 9 DE ABRIL DE 2026 - talvez, 1
 PORTARIA DE PESSOAL MTUR N° 70, DE 8 DE ABRIL DE 2026 - talvez, 4
 
 laudo 1.0::
-mal funcionamento, 
-1 positivo negativo
-2 talvez negativos
+bom funcionamento, 
+1 talvez negativo
+1 talvez positivo
+1 certeza positivo
 
 ---
 resultado 2.0:
@@ -225,16 +227,18 @@ PORTARIA SEPESD-MD N° 1.886, de 8 de abril de 2026 - certeza, 5
 PORTARIA DE PESSOAL MTUR N° 70, DE 8 DE ABRIL DE 2026 - talvez, 4
 
 laudo 2.0:
-mal funcionamento,
-melhoramento anyways
+bom funcionamento,
+1 talvez positivo
+1 certeza positivo
+melhoramento
 
-resultado 3.1:
+resultado 4.0:
 PORTARIA SEPESD-MD N° 1.886, de 8 de abril de 2026 - certeza, 5
 PORTARIA DE PESSOAL MTUR N° 70, DE 8 DE ABRIL DE 2026 - talvez, 13
 
-laudo 3.1:
-mal funcionamento,
-piorou
+laudo 4.0:
+perfeito,
+melhorou
 
 **13 de abril**
 resultado esperado:
@@ -265,7 +269,7 @@ resultado 2.0:
 PORTARIA SG-MD N° 1.901, de 8 de abril de 2026 - certeza, 10
 PORTARIA Nº 630, DE 9 DE ABRIL DE 2026 - talvez, 11
 
-laudo 3.1:
+laudo 4.0:
 perfeito,
 melhorou
 
@@ -296,12 +300,12 @@ laudo 2.0:
 perfeito,
 melhoramento
 
-resultado 3.1:
+resultado 4.0:
 PORTARIA GSI/PR Nº 157, DE 13 DE ABRIL DE 2026 - certeza, 19
 PORTARIA MCTI Nº 9.996, DE 13 DE ABRIL DE 2026 - certeza, 10
 PORTARIA MCTI Nº 9.987, DE 7 DE ABRIL DE 2026 - certeza, 9
 
-laudo 3.1:
+laudo 4.0:
 perfeito,
 manteve
 
@@ -349,7 +353,7 @@ perfeito
 melhoramento
 
 --
-3.1
+4.0
 perfeito manteve
 
 **17 de abril**
@@ -367,9 +371,9 @@ mal funcionamento,
 perdeu 1 positivo
 
 ---
-resultado 3.1:
+resultado 4.0:
 PORTARIA SE/MDIC Nº 94, DE 16 DE ABRIL DE 2026
 
-laudo 3.1:
+laudo 4.0:
 perfeito
 melhoramento
