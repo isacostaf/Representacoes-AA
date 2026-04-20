@@ -9,6 +9,12 @@ from baixar_pdf import baixar_pdf
 from baixar_pdf import criar_zip
 import pathlib as path
 
+
+def avancar_progresso(progress_bar, status_box, percentual, mensagem):
+    valor = max(0, min(int(percentual), 100))
+    progress_bar.progress(valor)
+    status_box.markdown(mensagem)
+
 st.title("Scanner Representações - MD")
 
 # palavras_fixas = [
@@ -75,18 +81,30 @@ if st.button("Verificar TODOS os resultados"):
     data_inicial_str = data_inicial.strftime("%d/%m/%Y")
     data_final_str = data_final.strftime("%d/%m/%Y")
 
+    avancar_progresso(progress, status, 15, "🌐 Preparando busca...")
+
     # Buscamos o link da pesquisa de hoje
     # Funcao do arquivo linkbusca.py
     url_busca = obter_link_busca(data_inicial_str, data_final_str)
 
-    resumo = analisar_links(url_busca, palavras_usuario, status=status, progress=progress)
+    avancar_progresso(progress, status, 50, "🔎 Analisando documentos...")
+
+    resumo = analisar_links(url_busca, palavras_usuario)
+
+    avancar_progresso(progress, status, 70, "🧾 Gerando arquivo CSV...")
 
     # Gerar CSV
     gerar_csv_relatorio(resumo)
+
+    avancar_progresso(progress, status, 80, "🧾 Preparando CSV para download...")
     csv = gerar_csv_relatorio_downloud(resumo)
+
+    avancar_progresso(progress, status, 90, "📥 Baixando PDFs...")
 
     # baixar pdf
     baixar_pdf()
+
+    avancar_progresso(progress, status, 100, "✅ Processo completo!")
 
     styled_df = gerar_tabela(resumo)
 
