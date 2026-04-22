@@ -1,28 +1,33 @@
-# Byte-compiled / cache
-__pycache__/
-*.py[cod]
-*$py.class
+# Node.js dependencies
+node_modules/
 
-# Build / packaging
-build/
+# Build and cache
 dist/
-*.egg-info/
-.eggs/
-pip-wheel-metadata/
+build/
+.cache/
+.turbo/
 
-# Virtual environments
-.venv/
-venv/
-env/
-ENV/
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
-# Test / coverage / tooling caches
-.pytest_cache/
-.mypy_cache/
-.ruff_cache/
-.coverage
-.coverage.*
-htmlcov/
+# Environment files
+.env
+.env.*
+!.env.example
+!modelo.env
+
+# Vercel
+.vercel/
+
+# Runtime and generated project files
+pdfs/
+relatorio.csv
+doc/
 
 # IDE / editor
 .vscode/
@@ -32,12 +37,6 @@ htmlcov/
 .DS_Store
 Thumbs.db
 
-# Logs and environment files
-*.log
-.env
-.env.*
-
-# Projeto (arquivos gerados/local)
-doc/
-pdfs/
-relatorio.csv
+# Optional local temp outputs
+tmp/
+temp/

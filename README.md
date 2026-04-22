@@ -1,84 +1,31 @@
-# WEB
-https://representacoes-aa.onrender.com/
+# Representacoes-AA (Node.js + EJS)
 
+Aplicacao para buscar e analisar publicacoes do DOU com classificacao de chance de representacao.
 
-# Como rodar:
-``pip install streamlit pandas requests``
+## Stack
+- Front-end: EJS
+- Back-end: Node.js + Express
+- Automacao de busca e geracao de PDF: Puppeteer (compativel com Vercel)
 
-``pip install streamlit selenium webdriver-manager``
+## Rodando localmente
+1. Instale as dependencias:
+	npm install
+2. Configure variaveis de ambiente:
+	copie modelo.env para .env e preencha os valores
+3. Inicie em modo desenvolvimento:
+	npm run dev
+4. Acesse:
+	http://localhost:3000
 
-``pip install pdfplumber``
+## Deploy na Vercel
+- Entrada serverless: api/index.js
+- Rotas: vercel.json
+- Em ambiente Vercel, os arquivos temporarios sao gerados em /tmp
 
-### Rodar app:
-``streamlit run app.py``
-
-### Como rodar qualquer streamlit:
-``streamlit run arquivo.py``
-
-### Como criar executavel:
-
-instale a ferramente 
-
-``pip install pyinstaller``
-
-``pyinstaller --clean --noconfirm DOU.spec``
-
-
-# Arquivos:
-Manual de arquivos
-
-**App principal:** *app.py*
-
-**Função Link:** *linkbusca.py*
-
-**Função Análise e Gráficos:** *analise.py*
-
-**Pastas:** 
-
-*V-arquivo: versões do arquivo arquivo.py e evolução*
-
-### App Princial:
-🔗 app.py
-
-*Esse é o app principal e único do projeto*
-
-*Depende de arquivos: linkbusca.py e analise.py*
-
-### Link Busca:
-🔗 linkbusca.py
-
-*Função que aplica os filtros necessários e realiza a busca filtrada do dia de hoje com as preferências necessárias*
-
-*Retorna o link com o resultado de busca exato*
-
-### Analise:
-🔗 analise.py
-
-*Função que aplica analisa e gera grafico dos documentos encontrados no link*
-
-*Procura pelas palavras chaves*
-
-### Analise VERSÕES:
-🔗 analiseV.py
-
-*Versões e evoluções do algoritmo de pesquisa e análise dos arquivos encontrados*
-
-### Mescla:
-🔗 mescla.py
-
-*Mesclagem do algoritmo de retorno de link com o algoritmo de pesquisa e análise dos arquivos*
-
-*analise.py + linkbusca.py*
-
-*Com alterações necessárias*
-
-*Para testar necessita estar na mesma pasta que o analise e o link busca usados*
-
-### Versões:
-🔗 versoes.md
-
-*documento de rastreamento de versões e evoluções de arquivos*
-
-# To-do
-- [ ] concertar link correto
-- [ ] deixar mais rápido
+## Variaveis de ambiente
+- SMTP_HOST
+- SMTP_PORT
+- SMTP_USER
+- SMTP_PASSWORD
+- EMAIL_FROM
+- EMAIL_TO
