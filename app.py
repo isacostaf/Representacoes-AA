@@ -55,12 +55,12 @@ st.title("Scanner Representações - MD")
 #     "no âmbito do comitê"
 # ]
 
-entrada = st.text_input(
-    "Digite palavras-chave adicionais (opcional)",
-    ""
-)
+# entrada = st.text_input(
+#     "Digite palavras-chave adicionais (opcional)",
+#     ""
+# )
 
-palavras_usuario = [p.strip() for p in entrada.split(",") if p.strip()]
+# palavras_usuario = [p.strip() for p in entrada.split(",") if p.strip()]
 # palavras = list(set(palavras_fixas + palavras_usuario))
 
 col_data_inicial, col_data_final = st.columns(2)
@@ -90,7 +90,7 @@ if st.button("Verificar TODOS os resultados"):
 
     avancar_progresso(progress, status, 50, "🔎 Analisando documentos...")
 
-    resumo = analisar_links(url_busca, palavras_usuario)
+    resumo = analisar_links(url_busca)
 
     avancar_progresso(progress, status, 70, "🧾 Gerando arquivo CSV...")
 
