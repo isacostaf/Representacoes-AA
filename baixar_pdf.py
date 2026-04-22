@@ -1,6 +1,8 @@
 import re
 import base64
+from html import unescape
 import pandas as pd
+from pandas.errors import EmptyDataError, ParserError
 
 from pathlib import Path
 from selenium import webdriver
@@ -12,6 +14,9 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
 import io
 import zipfile
+
+
+REGEX_HREF = re.compile(r'href=["\']([^"\']+)["\']', flags=re.IGNORECASE)
 
 def criar_zip(pasta: str) -> bytes:
     buffer = io.BytesIO()
@@ -32,14 +37,13 @@ def renomear(texto: str) -> str:
 
 def criar_driver():
 
-    options = webdriver.ChromeOptions()
-    options.binary_location = "/usr/bin/chromium"
+    options = Options()
     options.add_argument("--headless=new")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
 
     driver = webdriver.Chrome(
-        service=Service("/usr/bin/chromedriver"),
+        service=Service(ChromeDriverManager().install()),
         options=options
     )
 
@@ -81,11 +85,24 @@ def obter_pasta_classificacao(classificacao: str, pasta_base: Path) -> Path | No
     return None
 
 
-def baixar_pdf(caminho_csv: str = "relatorio.csv", pasta_saida: str = "pdfs") -> None:
-    df = pd.read_csv(caminho_csv)
+def extrair_url_pdf(valor_pdf: str) -> str:
+    valor = unescape(str(valor_pdf or "").strip())
+    if not valor:
+        return ""
 
-    if df.empty:
-        return
+    if valor.lower().startswith(("http://", "https://")):
+        return valor
+
+    match = REGEX_HREF.search(valor)
+    if match:
+        return match.group(1).strip()
+
+    return ""
+
+
+def baixar_pdf(caminho_csv: str = "relatorio.csv", pasta_saida: str = "pdfs") -> dict:
+    
+    df = pd.read_csv(caminho_csv)
 
     pasta_base = Path(pasta_saida)
     pasta_talvez = pasta_base / "talvez"
@@ -99,7 +116,7 @@ def baixar_pdf(caminho_csv: str = "relatorio.csv", pasta_saida: str = "pdfs") ->
     try:
         for linha in df[["Documento", "PDF", "Classificação"]].fillna("").to_dict("records"):
             nome = renomear(linha["Documento"])
-            url = str(linha["PDF"]).strip()
+            url = extrair_url_pdf(linha["PDF"])
             classificacao = linha["Classificação"]
 
             pasta_destino = obter_pasta_classificacao(classificacao, pasta_base)
@@ -118,7 +135,7 @@ def baixar_pdf(caminho_csv: str = "relatorio.csv", pasta_saida: str = "pdfs") ->
 
                 imprimir_pagina_em_pdf(driver, url, caminho)
 
-            except:
+            except Exception:
                 pass
 
     finally:
