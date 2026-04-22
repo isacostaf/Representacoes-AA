@@ -16,9 +16,9 @@ def gerar_csv_relatorio(resumo, caminho_saida="relatorio.csv"):
     
     # classificação
     def classificar(score):
-        if score >= 5:
+        if score >= 8:
             return "Alta chance"
-        elif score > 0:
+        elif score > 2:
             return "Talvez"
         else:
             return "Baixa chance"
@@ -26,7 +26,7 @@ def gerar_csv_relatorio(resumo, caminho_saida="relatorio.csv"):
     df["Classificação"] = df["Score"].apply(classificar)
 
     # filtra por score positivo
-    filtro = df["Score"] > 0
+    filtro = df["Score"] > 2 
 
     # gera o CSV
     df[filtro].drop(columns=["Score"], errors="ignore").to_csv(

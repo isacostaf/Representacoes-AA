@@ -8,6 +8,7 @@ from gerar_relatorio import gerar_csv_relatorio
 from baixar_pdf import baixar_pdf
 from baixar_pdf import criar_zip
 from erro import csv_vazio
+from env_email import enviar_email
 import pathlib as path
 
 
@@ -161,6 +162,11 @@ if st.button("Verificar TODOS os resultados"):
         file_name="talvez.zip",
         mime="application/zip",
         on_click="ignore"
+    )
+
+    st.button(
+        label="📧 Enviar email",
+        on_click=enviar_email
     )
 
     st.caption(f"Período consultado: {data_inicial_str} a {data_final_str}")
