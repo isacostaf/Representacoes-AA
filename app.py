@@ -1,11 +1,20 @@
 ## app.py
-
 from datetime import date
-
 import streamlit as st
 from linkbusca import obter_link_busca
 from analise import analisar_links, gerar_tabela
+from gerar_relatorio import gerar_csv_relatorio_downloud
 from gerar_relatorio import gerar_csv_relatorio
+from baixar_pdf import baixar_pdf
+from baixar_pdf import criar_zip
+from erro import csv_vazio
+import pathlib as path
+
+
+def avancar_progresso(progress_bar, status_box, percentual, mensagem):
+    valor = max(0, min(int(percentual), 100))
+    progress_bar.progress(valor)
+    status_box.markdown(mensagem)
 
 st.title("Scanner Representações - MD")
 
@@ -73,11 +82,40 @@ if st.button("Verificar TODOS os resultados"):
     data_inicial_str = data_inicial.strftime("%d/%m/%Y")
     data_final_str = data_final.strftime("%d/%m/%Y")
 
+    avancar_progresso(progress, status, 15, "🌐 Preparando busca...")
+
     # Buscamos o link da pesquisa de hoje
     # Funcao do arquivo linkbusca.py
     url_busca = obter_link_busca(data_inicial_str, data_final_str)
 
-    resumo = analisar_links(url_busca, palavras_usuario, status=status, progress=progress)
+    avancar_progresso(progress, status, 50, "🔎 Analisando documentos...")
+
+    resumo = analisar_links(url_busca, palavras_usuario)
+
+    avancar_progresso(progress, status, 70, "🧾 Gerando arquivo CSV...")
+
+    # Gerar CSV
+    gerar_csv_relatorio(resumo)
+
+    avancar_progresso(progress, status, 80, "🧾 Preparando CSV para download...")
+    csv = gerar_csv_relatorio_downloud(resumo)
+
+    if csv_vazio("relatorio.csv"):
+        avancar_progresso(progress, status, 100, "⚠️  Nenhum documento encontrado para o período informado.")
+        st.warning(
+            "Possivelmente não há arquivos disponíveis para essa data no sistema do DOU." 
+            "Como o agente pode apresentar inconsistências, recomendamos a verificação manual diretamente no site do DOU."
+        )
+        st.caption(f"Periodo consultado: {data_inicial_str} a {data_final_str}")
+        st.stop()
+
+    avancar_progresso(progress, status, 90, "📥 Baixando PDFs...")
+
+    # baixar pdf
+    baixar_pdf()
+
+    avancar_progresso(progress, status, 100, "✅ Processo completo!")
+
     styled_df = gerar_tabela(resumo)
 
     st.subheader("📊 Resultado")
@@ -100,15 +138,29 @@ if st.button("Verificar TODOS os resultados"):
 
     # Tabela
     st.markdown(styled_df.to_html(escape=False), unsafe_allow_html=True)
-
-    # Gerar CSV
-    csv = gerar_csv_relatorio(resumo)
-
+    
     st.download_button(
         label="📥 Baixar CSV",
         data=csv,
         file_name="relatorio.csv",
-        mime="text/csv"
+        mime="text/csv",
+        on_click="ignore"
+    )
+
+    st.download_button(
+        label="📥 Alta Chance",
+        data=criar_zip("pdfs/alta_chance"),
+        file_name="alta_chance.zip",
+        mime="application/zip",
+        on_click="ignore"
+    )
+
+    st.download_button(
+        label="📥 Talvez",
+        data=criar_zip("pdfs/talvez"),
+        file_name="talvez.zip",
+        mime="application/zip",
+        on_click="ignore"
     )
 
     st.caption(f"Período consultado: {data_inicial_str} a {data_final_str}")

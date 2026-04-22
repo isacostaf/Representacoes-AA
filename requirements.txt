@@ -1,0 +1,8 @@
+streamlit
+pandas
+requests
+selenium
+webdriver-manager
+pdfplumber
+python-dotenv
+beautifulsoup4
