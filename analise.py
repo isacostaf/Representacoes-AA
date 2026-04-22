@@ -18,57 +18,57 @@ from urllib3.util.retry import Retry
 # 🎯 PESOS
 # =========================
 PESOS_POSITIVOS = {
-    "fica instituído": 7,
-    "será composto": 7,
-    "designar os seguintes membros": 7,
-    "alterar designações": 7,
-    "designar como membros": 7,
-    "para compor": 2,
-    "comitê": 1,
-    "comissao": 1,
-    "conselho": 1,
-    "grupo de trabalho": 1,
-    "grupo de assessoramento": 1,
-    "grupo de assessoria": 1,
-    "grupo conjunto": 1,
-    "grupo especial": 1,
-    "grupo técnico": 1,
-    "subcomissao": 1,
-    "subcomite": 1,
-    "subgrupo": 1,
-    "designados": 1,
-    "designado": 1,
-    "nomeados": 1,
-    "nomeado": 1,
-    "indicados": 1,
-    "indicado": 1,
-    "membro": 1,
-    "representante": 1,
-    "representantes": 1,
+    # "fica instituído": 7,
+    # "será composto": 7,
+    # "designar os seguintes membros": 7,
+    # "alterar designações": 7,
+    # "designar como membros": 7,
+    # "para compor": 2,
+    # "comitê": 1,
+    # "comissao": 1,
+    # "conselho": 1,
+    # "grupo de trabalho": 1,
+    # "grupo de assessoramento": 1,
+    # "grupo de assessoria": 1,
+    # "grupo conjunto": 1,
+    # "grupo especial": 1,
+    # "grupo técnico": 1,
+    # "subcomissao": 1,
+    # "subcomite": 1,
+    # "subgrupo": 1,
+    # "designados": 1,
+    # "designado": 1,
+    # "nomeados": 1,
+    # "nomeado": 1,
+    # # "indicados": 1,
+    # # "indicado": 1,
+    # # "membro": 1,
+    # # "representante": 1,
+    # # "representantes": 1,
 }
 
 PESOS_NEGATIVOS = {
-    "incluir": 1,
-    "incluído": 1,
-    "incluída": 1,
-    "substitui": 1,
-    "substituído": 1,
-    "substituída": 1,
-    "excluir": 1,
-    "excluído": 1,
-    "excluída": 1,
-    "regulamenta": 1,
-    "institui": 1,
-    "estabelece": 1,
-    "disposições": 1,
-    "resolução": 1,
-    "licitação": 1,
+    # "incluir": 1,
+    # "incluído": 1,
+    # "incluída": 1,
+    # "substitui": 1,
+    # "substituído": 1,
+    # "substituída": 1,
+    # "excluir": 1,
+    # "excluído": 1,
+    # "excluída": 1,
+    # "regulamenta": 1,
+    # "institui": 1,
+    # "estabelece": 1,
+    # "disposições": 1,
+    # "resolução": 1,
+    # "licitação": 1,
 }
 
 # =========================
 # 🎯 REGRA FORTE: REPRESENTAÇÃO
 # =========================
-def detectar_representacao(texto):
+def detectar_representacao2(texto):
     texto = texto.lower()
 
     tem_designar = "designar" in texto
@@ -76,6 +76,23 @@ def detectar_representacao(texto):
 
     # padrão MUITO forte
     if "representantes dos seguintes órgãos" in texto:
+        return 10
+
+    # combinação principal
+    if tem_designar and tem_representante:
+        return 8
+
+    return 0
+
+# ficam designados
+def detectar_representacao(texto):
+    texto = texto.lower()
+
+    tem_designar = "ficam designados" in texto or "designar" in texto
+    tem_representante = "representante" in texto or "representantes" in texto or "membros" in texto or "titulares" in texto
+
+    # padrão MUITO forte
+    if "representantes dos seguintes órgãos" in texto or "para comporem" in texto:
         return 10
 
     # combinação principal
@@ -129,13 +146,14 @@ def pegar_texto_fast(url):
 # 🧠 SCORE
 # =========================
 def calcular_score(texto):
-    score_pos = sum(peso for palavra, peso in PESOS_POSITIVOS.items() if palavra in texto)
-    score_neg = sum(peso for palavra, peso in PESOS_NEGATIVOS.items() if palavra in texto)
+    # score_pos = sum(peso for palavra, peso in PESOS_POSITIVOS.items() if palavra in texto)
+    # score_neg = sum(peso for palavra, peso in PESOS_NEGATIVOS.items() if palavra in texto)
 
     # 🔥 NOVA REGRA
     score_rep = detectar_representacao(texto)
 
-    return score_pos - score_neg + score_rep
+    return score_rep
+# score_pos - score_neg + 
 
 # =========================
 # 🔎 BOTÃO PRÓXIMA
@@ -209,9 +227,15 @@ def processar_link(item):
     positivas = [p for p in PESOS_POSITIVOS if p in texto]
     negativas = [p for p in PESOS_NEGATIVOS if p in texto]
 
+    botao_pdf = (
+        f'<a href="{link}" target="_blank">'
+        'Abrir PDF</a>'
+    )
+
+
     return {
         "Documento": titulo,
-        "PDF": f"[PDF]({link})",
+        "PDF": botao_pdf,
         "Score": score,
         "Palavras positivas": ", ".join(positivas),
         "Palavras negativas": ", ".join(negativas),
