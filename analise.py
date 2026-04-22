@@ -15,54 +15,61 @@ from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
 # =========================
+# 🎯 BLOQUEIO
+# =========================
+PALAVRAS_BLOQUEIO = [
+    "cesportos",
+]
+
+# =========================
 # 🎯 PESOS
 # =========================
 PESOS_POSITIVOS = {
-    # "fica instituído": 7,
-    # "será composto": 7,
-    # "designar os seguintes membros": 7,
-    # "alterar designações": 7,
-    # "designar como membros": 7,
-    # "para compor": 2,
-    # "comitê": 1,
-    # "comissao": 1,
-    # "conselho": 1,
-    # "grupo de trabalho": 1,
-    # "grupo de assessoramento": 1,
-    # "grupo de assessoria": 1,
-    # "grupo conjunto": 1,
-    # "grupo especial": 1,
-    # "grupo técnico": 1,
-    # "subcomissao": 1,
-    # "subcomite": 1,
-    # "subgrupo": 1,
-    # "designados": 1,
-    # "designado": 1,
-    # "nomeados": 1,
-    # "nomeado": 1,
-    # # "indicados": 1,
-    # # "indicado": 1,
-    # # "membro": 1,
-    # # "representante": 1,
-    # # "representantes": 1,
+    "fica instituído": 7,
+    "será composto": 7,
+    "designar os seguintes membros": 7,
+    "alterar designações": 7,
+    "designar como membros": 7,
+    "para compor": 2,
+    "comitê": 1,
+    "comissao": 1,
+    "conselho": 1,
+    "grupo de trabalho": 1,
+    "grupo de assessoramento": 1,
+    "grupo de assessoria": 1,
+    "grupo conjunto": 1,
+    "grupo especial": 1,
+    "grupo técnico": 1,
+    "subcomissao": 1,
+    "subcomite": 1,
+    "subgrupo": 1,
+    "designados": 1,
+    "designado": 1,
+    "nomeados": 1,
+    "nomeado": 1,
+    "indicados": 1,
+    "indicado": 1,
+    "membro": 1,
+    "representante": 1,
+    "representantes": 1,
 }
 
 PESOS_NEGATIVOS = {
-    # "incluir": 1,
-    # "incluído": 1,
-    # "incluída": 1,
-    # "substitui": 1,
-    # "substituído": 1,
-    # "substituída": 1,
-    # "excluir": 1,
-    # "excluído": 1,
-    # "excluída": 1,
-    # "regulamenta": 1,
-    # "institui": 1,
-    # "estabelece": 1,
-    # "disposições": 1,
-    # "resolução": 1,
-    # "licitação": 1,
+    "incluir": 1,
+    "incluído": 1,
+    "incluída": 1,
+    "substitui": 1,
+    "substituído": 1,
+    "substituída": 1,
+    "excluir": 1,
+    "excluído": 1,
+    "excluída": 1,
+    "regulamenta": 1,
+    "institui": 1,
+    "estabelece": 1,
+    "disposições": 1,
+    "resolução": 1,
+    "licitação": 1,
 }
 
 # =========================
@@ -88,8 +95,10 @@ def detectar_representacao2(texto):
 def detectar_representacao(texto):
     texto = texto.lower()
 
-    tem_designar = "ficam designados" in texto or "designar" in texto
+    tem_designar = "ficam designados" in texto or "designar" in texto or "alterar designações" in texto
     tem_representante = "representante" in texto or "representantes" in texto or "membros" in texto or "titulares" in texto
+    tem_instituicao = "fica instituído" in texto or "institui" in texto
+    tem_com = "comitê" in texto or "grupo" in texto or "comissão" in texto or " conselho" in texto or "subcomitê" in texto or "subgrupo" in texto or "subcomissão" in texto
 
     # padrão MUITO forte
     if "representantes dos seguintes órgãos" in texto or "para comporem" in texto:
@@ -98,8 +107,18 @@ def detectar_representacao(texto):
     # combinação principal
     if tem_designar and tem_representante:
         return 8
+    
+    # padrao institui
+    # if tem_instituicao and tem_com:
+    #     return 8
 
     return 0
+
+# =========================
+# 🌐 DEF BLOQUEIO
+# =========================
+def tem_bloqueio(texto):
+    return any(p in texto for p in PALAVRAS_BLOQUEIO)
 
 # =========================
 # 🌐 SESSION OTIMIZADA
@@ -146,14 +165,13 @@ def pegar_texto_fast(url):
 # 🧠 SCORE
 # =========================
 def calcular_score(texto):
-    # score_pos = sum(peso for palavra, peso in PESOS_POSITIVOS.items() if palavra in texto)
-    # score_neg = sum(peso for palavra, peso in PESOS_NEGATIVOS.items() if palavra in texto)
+    score_pos = sum(peso for palavra, peso in PESOS_POSITIVOS.items() if palavra in texto)
+    score_neg = sum(peso for palavra, peso in PESOS_NEGATIVOS.items() if palavra in texto)
 
-    # 🔥 NOVA REGRA
+    score_base = score_pos - score_neg
     score_rep = detectar_representacao(texto)
 
-    return score_rep
-# score_pos - score_neg + 
+    return score_base, score_rep
 
 # =========================
 # 🔎 BOTÃO PRÓXIMA
@@ -222,10 +240,12 @@ def processar_link(item):
     titulo, link = item
 
     texto = pegar_texto_fast(link)
-    score = calcular_score(texto)
+    score_base, score_rep = calcular_score(texto)
+    bloqueado = tem_bloqueio(texto)
 
     positivas = [p for p in PESOS_POSITIVOS if p in texto]
     negativas = [p for p in PESOS_NEGATIVOS if p in texto]
+
 
     botao_pdf = (
         f'<a href="{link}" target="_blank">'
@@ -236,15 +256,19 @@ def processar_link(item):
     return {
         "Documento": titulo,
         "PDF": botao_pdf,
-        "Score": score,
+        "Score Base": score_base,
+        "Score Representação": score_rep,
         "Palavras positivas": ", ".join(positivas),
         "Palavras negativas": ", ".join(negativas),
+        "Bloqueado": bloqueado,
     }
 
 # =========================
 # 🚀 FUNÇÃO PRINCIPAL
 # =========================
-def analisar_links(url_busca, palavras_usuario, status=None, progress=None):
+# def analisar_links(url_busca, palavras_usuario, status=None, progress=None):
+def analisar_links(url_busca, status=None, progress=None):
+
     options = Options()
     options.add_argument("--headless")
 
@@ -296,12 +320,21 @@ def gerar_tabela(resumo):
         return df
 
     def destacar_linha(row):
-        score = row["Score"]
+        score_base = row["Score Base"]
+        score_rep = row["Score Representação"]
+        bloqueado = row["Bloqueado"]
 
-        if score >= 5:
+        # 🟢 VERDE → representação forte
+        if score_rep >= 8 and not bloqueado and score_base >-1 :
             return ["background-color: #e6f4ea"] * len(row)
-        elif score > 2:
+
+        # 🟡 AMARELO → sem representação, mas peso alto
+        elif score_base > 2 or score_rep >= 8:
             return ["background-color: #fff9c4"] * len(row)
+
         return [""] * len(row)
 
-    return df.style.apply(destacar_linha, axis=1)
+    styled = df.style.apply(destacar_linha, axis=1)
+    df = df.drop(columns=["Bloqueado"], errors="ignore")
+
+    return styled

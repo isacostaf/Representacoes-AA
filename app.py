@@ -46,12 +46,12 @@ st.title("Scanner Representações - MD")
 #     "no âmbito do comitê"
 # ]
 
-entrada = st.text_input(
-    "Digite palavras-chave adicionais (opcional)",
-    ""
-)
+# entrada = st.text_input(
+#     "Digite palavras-chave adicionais (opcional)",
+#     ""
+# )
 
-palavras_usuario = [p.strip() for p in entrada.split(",") if p.strip()]
+# palavras_usuario = [p.strip() for p in entrada.split(",") if p.strip()]
 # palavras = list(set(palavras_fixas + palavras_usuario))
 
 col_data_inicial, col_data_final = st.columns(2)
@@ -77,7 +77,9 @@ if st.button("Verificar TODOS os resultados"):
     # Funcao do arquivo linkbusca.py
     url_busca = obter_link_busca(data_inicial_str, data_final_str)
 
-    resumo = analisar_links(url_busca, palavras_usuario, status=status, progress=progress)
+    # resumo = analisar_links(url_busca, palavras_usuario, status=status, progress=progress)
+    resumo = analisar_links(url_busca, status=status, progress=progress)
+
     styled_df = gerar_tabela(resumo)
 
     st.subheader("📊 Resultado")

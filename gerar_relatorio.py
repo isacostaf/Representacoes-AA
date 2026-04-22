@@ -16,19 +16,27 @@ def gerar_csv_relatorio(resumo):
         )
 
     # garante Score
-    df["Score"] = pd.to_numeric(df.get("Score", 0), errors="coerce").fillna(0)
+    df["Score"] = df["Score Base"] + df["Score Representação"]
 
     # classificação
-    def classificar(score):
-        if score >= 5:
+    def classificar(row):
+        score_base = row["Score Base"]
+        score_rep = row["Score Representação"]
+
+        # 🟢 Alta chance → representação detectada
+        if score_rep >= 8:
             return "Alta chance"
-        elif score > 0:
+
+        # 🟡 Talvez → sem representação, mas score alto
+        elif score_base > 2:
             return "Talvez"
+
+        # 🔴 Baixa chance
         else:
             return "Baixa chance"
 
-    df["Classificação"] = df["Score"].apply(classificar)
-
+    df["Classificação"] = df.apply(classificar, axis=1)
+    
     # ordena
     df = df.sort_values(by="Score", ascending=False)
 
