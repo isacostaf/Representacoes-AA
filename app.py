@@ -7,6 +7,7 @@ from gerar_relatorio import gerar_csv_relatorio_downloud
 from gerar_relatorio import gerar_csv_relatorio
 from baixar_pdf import baixar_pdf
 from baixar_pdf import criar_zip
+from erro import csv_vazio
 import pathlib as path
 
 
@@ -98,6 +99,15 @@ if st.button("Verificar TODOS os resultados"):
 
     avancar_progresso(progress, status, 80, "🧾 Preparando CSV para download...")
     csv = gerar_csv_relatorio_downloud(resumo)
+
+    if csv_vazio("relatorio.csv"):
+        avancar_progresso(progress, status, 100, "⚠️  Nenhum documento encontrado para o período informado.")
+        st.warning(
+            "Possivelmente não há arquivos disponíveis para essa data no sistema do DOU." 
+            "Como o agente pode apresentar inconsistências, recomendamos a verificação manual diretamente no site do DOU."
+        )
+        st.caption(f"Periodo consultado: {data_inicial_str} a {data_final_str}")
+        st.stop()
 
     avancar_progresso(progress, status, 90, "📥 Baixando PDFs...")
 
