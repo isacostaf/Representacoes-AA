@@ -143,25 +143,22 @@ if st.button("Verificar TODOS os resultados"):
     st.download_button(
         label="📥 Baixar CSV",
         data=csv,
-        file_name="relatorio.csv",
-        mime="text/csv",
-        on_click="ignore"
+        file_name=f"DOUcompleto_{data_inicial_str}-{data_final_str}.csv",
+        mime="text/csv"
     )
 
     st.download_button(
         label="📥 Alta Chance",
         data=criar_zip("pdfs/alta_chance"),
-        file_name="alta_chance.zip",
+        file_name=f"DOUalta_{data_inicial_str}-{data_final_str}.csv",
         mime="application/zip",
-        on_click="ignore"
     )
 
     st.download_button(
         label="📥 Talvez",
         data=criar_zip("pdfs/talvez"),
-        file_name="talvez.zip",
+        file_name=f"DOUtalvez_{data_inicial_str}-{data_final_str}.csv",
         mime="application/zip",
-        on_click="ignore"
     )
 
     st.button(
