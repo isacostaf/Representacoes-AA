@@ -4,11 +4,14 @@ const { Parser } = require("json2csv");
 function classificar(row) {
   const scoreBase = Number(row["Score Base"] || 0);
   const scoreRep = Number(row["Score Representacao"] || 0);
+  const bloqueado = row["Bloqueado"] === true || row["Bloqueado"] === "true";
 
-  if (scoreRep >= 8) {
+  // Alta chance: scoreRep >= 8, não bloqueado, scoreBase > -1
+  if (scoreRep >= 8 && !bloqueado && scoreBase > -1) {
     return "Alta chance";
   }
-  if (scoreBase > 2) {
+  // Talvez: scoreBase > 2 ou scoreRep >= 8 (mas não Alta chance)
+  if (scoreBase > 2 || scoreRep >= 8) {
     return "Talvez";
   }
   return "Baixa chance";
