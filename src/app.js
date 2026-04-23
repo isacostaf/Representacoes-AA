@@ -8,7 +8,7 @@ const { v4: uuidv4 } = require("uuid");
 const { createRunDirs } = require("./utils/storage");
 const { obterLinkBusca } = require("./services/searchService");
 const { analisarLinks } = require("./services/analysisService");
-const { gerarRelatorio, salvarCsv } = require("./services/reportService");
+const { gerarRelatorio, gerarCsvDownload, salvarCsv } = require("./services/reportService");
 const { baixarPdfs, criarZipBuffer } = require("./services/pdfService");
 const { enviarEmail } = require("./services/emailService");
 const { saveRun, getRun } = require("./state");
@@ -16,6 +16,7 @@ const { saveRun, getRun } = require("./state");
 const app = express();
 app.set("view engine", "ejs");
 app.set("views", path.join(process.cwd(), "views"));
+app.use(express.static(path.join(process.cwd(), "public")));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
@@ -60,19 +61,21 @@ app.post("/process", async (req, res) => {
     const resumo = await analisarLinks(urlBusca);
 
     const relatorio = gerarRelatorio(resumo);
-    salvarCsv(dirs.csvPath, relatorio.csvRows);
+    const csvDownload = gerarCsvDownload(resumo);
 
-    await baixarPdfs(relatorio.linhas, dirs);
+    salvarCsv(dirs.csvPath, csvDownload);
+
+    await baixarPdfs(relatorio, dirs);
 
     saveRun(runId, {
       dataInicial,
       dataFinal,
-      rows: relatorio.linhas,
+      rows: relatorio,
       dirs,
     });
 
     const totalDocumentos = resumo.length;
-    const totalClassificados = relatorio.csvRows.length;
+    const totalClassificados = relatorio.length;
     let aviso = "";
 
     if (totalDocumentos === 0) {
@@ -87,7 +90,7 @@ app.post("/process", async (req, res) => {
       erro: "",
       aviso,
       runId,
-      rows: relatorio.linhas,
+      rows: relatorio,
     });
   } catch (error) {
     return res.status(500).render("index", {

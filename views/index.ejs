@@ -3,155 +3,17 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Scanner Representacoes - MD</title>
-    <style>
-      :root {
-        --bg: #f2f5ee;
-        --card: #ffffff;
-        --title: #22311a;
-        --muted: #4d5d44;
-        --primary: #1f5a37;
-        --primary-dark: #163f27;
-        --danger: #8a1f11;
-        --warn: #7b5a00;
-        --line: #d8dfd1;
-        --ok-row: #e6f4ea;
-        --maybe-row: #fff9c4;
-      }
-
-      * {
-        box-sizing: border-box;
-      }
-
-      body {
-        margin: 0;
-        background: radial-gradient(circle at top left, #e7f1de, var(--bg));
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-        color: var(--title);
-      }
-
-      .container {
-        width: min(1100px, 92%);
-        margin: 24px auto 40px;
-      }
-
-      .card {
-        background: var(--card);
-        border: 1px solid var(--line);
-        border-radius: 14px;
-        padding: 18px;
-        box-shadow: 0 6px 16px rgba(22, 63, 39, 0.08);
-      }
-
-      h1 {
-        margin: 4px 0 16px;
-        font-size: 1.8rem;
-      }
-
-      p,
-      li {
-        color: var(--muted);
-      }
-
-      .row {
-        display: grid;
-        grid-template-columns: 1fr 1fr auto;
-        gap: 12px;
-        align-items: end;
-      }
-
-      label {
-        display: block;
-        margin-bottom: 6px;
-        font-weight: 600;
-      }
-
-      input[type="date"] {
-        width: 100%;
-        border: 1px solid var(--line);
-        border-radius: 10px;
-        padding: 10px;
-        font-size: 1rem;
-      }
-
-      button,
-      .btn {
-        border: none;
-        background: var(--primary);
-        color: #fff;
-        padding: 10px 14px;
-        border-radius: 10px;
-        cursor: pointer;
-        text-decoration: none;
-        display: inline-block;
-      }
-
-      button:hover,
-      .btn:hover {
-        background: var(--primary-dark);
-      }
-
-      .msg {
-        margin-top: 12px;
-        padding: 10px 12px;
-        border-radius: 10px;
-      }
-
-      .erro {
-        background: #ffe5e1;
-        color: var(--danger);
-      }
-
-      .aviso {
-        background: #fff3d9;
-        color: var(--warn);
-      }
-
-      .acoes {
-        margin-top: 14px;
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-      }
-
-      table {
-        margin-top: 14px;
-        width: 100%;
-        border-collapse: collapse;
-      }
-
-      th,
-      td {
-        border: 1px solid var(--line);
-        padding: 8px;
-        text-align: left;
-        vertical-align: top;
-        font-size: 0.92rem;
-      }
-
-      tr.alta {
-        background: var(--ok-row);
-      }
-
-      tr.talvez {
-        background: var(--maybe-row);
-      }
-
-      @media (max-width: 780px) {
-        .row {
-          grid-template-columns: 1fr;
-        }
-
-        button {
-          width: 100%;
-        }
-      }
-    </style>
+    <title>Scanner Representações - MD</title>
+    <link rel="stylesheet" href="/style.css" />
   </head>
   <body>
     <main class="container">
       <section class="card">
-        <h1>Scanner Representacoes - MD</h1>
+        <h1>Scanner Representações - MD</h1>
+
+        <div class="aviso-humano">
+          Atenção: a análise automática pode conter erros. A verificação humana é indispensável antes de qualquer decisão.
+        </div>
 
         <form method="post" action="/process">
           <div class="row">
@@ -193,8 +55,8 @@
         <section class="card" style="margin-top:16px;">
           <h2>Resultado</h2>
           <p>
-            Verde: alta chance de ser representacao.<br />
-            Amarelo: talvez, recomenda-se verificacao manual.
+            Verde: cerca de 90% de chance de ser representação que nos interessa.<br />
+            Amarelo: talvez, recomenda-se verificação manual.
           </p>
 
           <table>
@@ -202,9 +64,9 @@
               <tr>
                 <th>Documento</th>
                 <th>PDF</th>
-                <th>Classificacao</th>
+                <th>Classificação</th>
                 <th>Score Base</th>
-                <th>Score Representacao</th>
+                <th>Score Representação</th>
               </tr>
             </thead>
             <tbody>

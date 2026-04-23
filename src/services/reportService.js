@@ -15,36 +15,40 @@ function classificar(row) {
 }
 
 function gerarRelatorio(resumo) {
-  const linhas = (resumo || []).map((row) => ({
-    Documento: row.Documento,
-    PDF: row.PDF,
-    Classificacao: classificar(row),
-    "Score Base": row["Score Base"],
-    "Score Representacao": row["Score Representacao"],
-  }));
-
-  const filtradoCsv = linhas.filter((row) => {
-    const scoreTotal = Number(row["Score Base"] || 0) + Number(row["Score Representacao"] || 0);
-    return scoreTotal > 2;
-  });
-
-  return {
-    linhas,
-    csvRows: filtradoCsv.map((row) => ({
+  return (resumo || [])
+    .map((row) => ({
       Documento: row.Documento,
       PDF: row.PDF,
-      Classificacao: row.Classificacao,
-    })),
-  };
+      Classificacao: classificar(row),
+      "Score Base": row["Score Base"],
+      "Score Representacao": row["Score Representacao"],
+    }))
+    .filter(
+      (row) =>
+        row.Classificacao === "Alta chance" ||
+        row.Classificacao === "Talvez"
+    );
+}
+
+function gerarCsvDownload(resumo) {
+  return (resumo || [])
+    .map((row) => ({
+      Documento: row.Documento,
+      PDF: row.PDF,
+      Classificacao: classificar(row),
+      "Score Base": row["Score Base"],
+      "Score Representacao": row["Score Representacao"],
+    }));
 }
 
 function salvarCsv(caminho, csvRows) {
   const campos = ["Documento", "PDF", "Classificacao"];
   const parser = new Parser({ fields: campos });
 
-  const conteudo = csvRows && csvRows.length > 0
-    ? parser.parse(csvRows)
-    : `${campos.join(",")}\n`;
+  const conteudo =
+    csvRows && csvRows.length > 0
+      ? parser.parse(csvRows)
+      : `${campos.join(",")}\n`;
 
   fs.writeFileSync(caminho, conteudo, "utf8");
   return conteudo;
@@ -52,5 +56,6 @@ function salvarCsv(caminho, csvRows) {
 
 module.exports = {
   gerarRelatorio,
+  gerarCsvDownload,
   salvarCsv,
 };
