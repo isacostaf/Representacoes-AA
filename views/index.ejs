@@ -9,25 +9,32 @@
   <body>
     <main class="container">
       <section class="card">
-        <h1>Scanner Representações - MD</h1>
+        <header>
+          <div>
+            <h1>Scanner Representações - MD</h1>
+            <p>Use o scanner para identificar representações entre datas e exportar os resultados rapidamente.</p>
+          </div>
+        </header>
 
         <div class="aviso-humano">
           Atenção: a análise automática pode conter erros. A verificação humana é indispensável antes de qualquer decisão.
         </div>
 
         <form method="post" action="/process">
-          <div class="row">
-            <div>
+          <div class="form-grid">
+            <div class="field">
               <label for="dataInicial">Data inicial</label>
               <input id="dataInicial" name="dataInicial" type="date" value="<%= dataInicial %>" required />
             </div>
 
-            <div>
+            <div class="field">
               <label for="dataFinal">Data final</label>
               <input id="dataFinal" name="dataFinal" type="date" value="<%= dataFinal %>" required />
             </div>
 
-            <button type="submit">Verificar TODOS os resultados</button>
+            <div class="field">
+              <button class="primary" type="submit">Verificar resultados</button>
+            </div>
           </div>
         </form>
 
@@ -40,48 +47,47 @@
         <% } %>
 
         <% if (runId) { %>
-          <div class="acoes">
-            <a class="btn" href="/download/csv/<%= runId %>">Baixar CSV</a>
-            <a class="btn" href="/download/zip/<%= runId %>/alta">Alta Chance</a>
-            <a class="btn" href="/download/zip/<%= runId %>/talvez">Talvez</a>
+          <div class="actions">
+            <a class="btn secondary" href="/download/csv/<%= runId %>">Baixar CSV</a>
+            <a class="btn secondary" href="/download/zip/<%= runId %>/alta">Alta Chance</a>
+            <a class="btn secondary" href="/download/zip/<%= runId %>/talvez">Talvez</a>
             <form action="/email/<%= runId %>" method="post">
-              <button type="submit">Enviar e-mail</button>
+              <button class="primary" type="submit">Enviar e-mail</button>
             </form>
           </div>
         <% } %>
       </section>
 
       <% if (rows && rows.length) { %>
-        <section class="card" style="margin-top:16px;">
-          <h2>Resultado</h2>
-          <p>
-            Verde: cerca de 90% de chance de ser representação que nos interessa.<br />
-            Amarelo: talvez, recomenda-se verificação manual.
-          </p>
+        <section class="card">
+          <h2>Resultados</h2>
+          <p>Verde: cerca de 90% de chance de ser representação relevante. Amarelo: revisão manual recomendada.</p>
 
-          <table>
-            <thead>
-              <tr>
-                <th>Documento</th>
-                <th>PDF</th>
-                <th>Classificação</th>
-                <th>Score Base</th>
-                <th>Score Representação</th>
-              </tr>
-            </thead>
-            <tbody>
-              <% rows.forEach((row) => { %>
-                <% const classe = row.Classificacao === "Alta chance" ? "alta" : row.Classificacao === "Talvez" ? "talvez" : ""; %>
-                <tr class="<%= classe %>">
-                  <td><%= row.Documento %></td>
-                  <td><a href="<%= row.PDF %>" target="_blank" rel="noopener noreferrer">Abrir PDF</a></td>
-                  <td><%= row.Classificacao %></td>
-                  <td><%= row["Score Base"] %></td>
-                  <td><%= row["Score Representacao"] %></td>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Documento</th>
+                  <th>PDF</th>
+                  <th>Classificação</th>
+                  <th>Score Base</th>
+                  <th>Score Representação</th>
                 </tr>
-              <% }) %>
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                <% rows.forEach((row) => { %>
+                  <% const classe = row.Classificacao === "Alta chance" ? "alta" : row.Classificacao === "Talvez" ? "talvez" : ""; %>
+                  <tr class="<%= classe %>">
+                    <td><%= row.Documento %></td>
+                    <td><a href="<%= row.PDF %>" target="_blank" rel="noopener noreferrer">Abrir PDF</a></td>
+                    <td><%= row.Classificacao %></td>
+                    <td><%= row["Score Base"] %></td>
+                    <td><%= row["Score Representacao"] %></td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
         </section>
       <% } %>
     </main>
