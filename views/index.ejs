@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Scanner Representações - MD</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <main class="container">
+      <section class="card">
+        <h1>Scanner Representações - MD</h1>
+
+        <div class="aviso-humano">
+          Atenção: a análise automática pode conter erros. A verificação humana é indispensável antes de qualquer decisão.
+        </div>
+
+        <form method="post" action="/process">
+          <div class="row">
+            <div>
+              <label for="dataInicial">Data inicial</label>
+              <input id="dataInicial" name="dataInicial" type="date" value="<%= dataInicial %>" required />
+            </div>
+
+            <div>
+              <label for="dataFinal">Data final</label>
+              <input id="dataFinal" name="dataFinal" type="date" value="<%= dataFinal %>" required />
+            </div>
+
+            <button type="submit">Verificar TODOS os resultados</button>
+          </div>
+        </form>
+
+        <% if (erro) { %>
+          <div class="msg erro"><%= erro %></div>
+        <% } %>
+
+        <% if (aviso) { %>
+          <div class="msg aviso"><%= aviso %></div>
+        <% } %>
+
+        <% if (runId) { %>
+          <div class="acoes">
+            <a class="btn" href="/download/csv/<%= runId %>">Baixar CSV</a>
+            <a class="btn" href="/download/zip/<%= runId %>/alta">Alta Chance</a>
+            <a class="btn" href="/download/zip/<%= runId %>/talvez">Talvez</a>
+            <form action="/email/<%= runId %>" method="post">
+              <button type="submit">Enviar e-mail</button>
+            </form>
+          </div>
+        <% } %>
+      </section>
+
+      <% if (rows && rows.length) { %>
+        <section class="card" style="margin-top:16px;">
+          <h2>Resultado</h2>
+          <p>
+            Verde: cerca de 90% de chance de ser representação que nos interessa.<br />
+            Amarelo: talvez, recomenda-se verificação manual.
+          </p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Documento</th>
+                <th>PDF</th>
+                <th>Classificação</th>
+                <th>Score Base</th>
+                <th>Score Representação</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% rows.forEach((row) => { %>
+                <% const classe = row.Classificacao === "Alta chance" ? "alta" : row.Classificacao === "Talvez" ? "talvez" : ""; %>
+                <tr class="<%= classe %>">
+                  <td><%= row.Documento %></td>
+                  <td><a href="<%= row.PDF %>" target="_blank" rel="noopener noreferrer">Abrir PDF</a></td>
+                  <td><%= row.Classificacao %></td>
+                  <td><%= row["Score Base"] %></td>
+                  <td><%= row["Score Representacao"] %></td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </section>
+      <% } %>
+    </main>
+  </body>
+</html>

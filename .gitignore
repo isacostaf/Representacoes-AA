@@ -1,0 +1,42 @@
+# Node.js dependencies
+node_modules/
+
+# Build and cache
+dist/
+build/
+.cache/
+.turbo/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment files
+.env
+.env.*
+!.env.example
+!modelo.env
+
+# Vercel
+.vercel/
+
+# Runtime and generated project files
+pdfs/
+relatorio.csv
+doc/
+
+# IDE / editor
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Optional local temp outputs
+tmp/
+temp/
