@@ -144,8 +144,7 @@ if st.button("Verificar TODOS os resultados"):
         label="📥 Baixar CSV",
         data=csv,
         file_name="relatorio.csv",
-        mime="text/csv",
-        on_click="ignore"
+        mime="text/csv"
     )
 
     st.download_button(

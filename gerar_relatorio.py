@@ -12,18 +12,30 @@ def gerar_csv_relatorio(resumo, caminho_saida="relatorio.csv"):
         df["PDF"] = (df["PDF"].astype(str).str.extract(r'\((.*?)\)', expand=False).fillna(df["PDF"]))
 
     # garante Score
+    df["Score Base"] = pd.to_numeric(df["Score Base"], errors="coerce").fillna(0)
+    df["Score Representação"] = pd.to_numeric(df["Score Representação"], errors="coerce").fillna(0)
+
     df["Score"] = df["Score Base"] + df["Score Representação"]
     
     # classificação
-    def classificar(score):
-        if score >= 8:
+    def classificar(row):
+        score_base = row.get("Score Base", 0)
+        score_rep = row.get("Score Representação", 0)
+        bloqueado = row.get("Bloqueado", False)
+
+        # 🟢 Verde
+        if score_rep >= 8 and not bloqueado and score_base > -1:
             return "Alta chance"
-        elif score > 2:
+
+        # 🟡 Amarelo
+        elif score_base > 2 or score_rep >= 8:
             return "Talvez"
+
+        # 🔴 Vermelho
         else:
             return "Baixa chance"
 
-    df["Classificação"] = df["Score"].apply(classificar)
+    df["Classificação"] = df.apply(classificar, axis=1)
 
     # filtra por score positivo
     filtro = df["Score"] > 2 
@@ -51,22 +63,25 @@ def gerar_csv_relatorio_downloud(resumo):
         )
 
     # garante Score
+    df["Score Base"] = pd.to_numeric(df["Score Base"], errors="coerce").fillna(0)
+    df["Score Representação"] = pd.to_numeric(df["Score Representação"], errors="coerce").fillna(0)
+
     df["Score"] = df["Score Base"] + df["Score Representação"]
 
-    # classificação
     def classificar(row):
-        score_base = row["Score Base"]
-        score_rep = row["Score Representação"]
+        score_base = row.get("Score Base", 0)
+        score_rep = row.get("Score Representação", 0)
+        bloqueado = row.get("Bloqueado", False)
 
-        # 🟢 Alta chance → representação detectada
-        if score_rep >= 8:
+        # 🟢 Verde
+        if score_rep >= 8 and not bloqueado and score_base > -1:
             return "Alta chance"
 
-        # 🟡 Talvez → sem representação, mas score alto
-        elif score_base > 2:
+        # 🟡 Amarelo
+        elif score_base > 2 or score_rep >= 8:
             return "Talvez"
 
-        # 🔴 Baixa chance
+        # 🔴 Vermelho
         else:
             return "Baixa chance"
 
